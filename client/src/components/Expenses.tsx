@@ -37,7 +37,7 @@ export function Expenses({ user }: ExpensesProps) {
       const res = await apiRequest("POST", "/api/expenses", { 
         ...data, 
         userId: user.id,
-        amount: parseFloat(data.amount)
+        amount: data.amount.toString()
       });
       return res.json();
     },
@@ -56,7 +56,7 @@ export function Expenses({ user }: ExpensesProps) {
     mutationFn: async ({ id, ...data }: any) => {
       const res = await apiRequest("PUT", `/api/expenses/${id}`, {
         ...data,
-        amount: parseFloat(data.amount)
+        amount: data.amount.toString()
       });
       return res.json();
     },

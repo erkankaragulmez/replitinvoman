@@ -48,7 +48,7 @@ export function Invoices({ user }: InvoicesProps) {
       const res = await apiRequest("POST", "/api/invoices", { 
         ...data, 
         userId: user.id,
-        amount: parseFloat(data.amount)
+        amount: data.amount.toString()
       });
       return res.json();
     },
@@ -67,7 +67,7 @@ export function Invoices({ user }: InvoicesProps) {
     mutationFn: async ({ id, ...data }: any) => {
       const res = await apiRequest("PUT", `/api/invoices/${id}`, {
         ...data,
-        amount: parseFloat(data.amount)
+        amount: data.amount.toString()
       });
       return res.json();
     },

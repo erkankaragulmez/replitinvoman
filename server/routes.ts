@@ -101,7 +101,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/invoices", async (req, res) => {
     try {
-      const invoiceData = insertInvoiceSchema.parse(req.body);
+      // Convert amount to string if it's a number
+      const requestData = {
+        ...req.body,
+        amount: typeof req.body.amount === 'number' ? req.body.amount.toString() : req.body.amount
+      };
+      const invoiceData = insertInvoiceSchema.parse(requestData);
       const invoice = await storage.createInvoice(invoiceData);
       res.json(invoice);
     } catch (error) {
@@ -113,12 +118,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/invoices/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const invoice = await storage.updateInvoice(id, req.body);
+      // Convert amount to string if it's a number
+      const updateData = {
+        ...req.body,
+        amount: req.body.amount && typeof req.body.amount === 'number' ? req.body.amount.toString() : req.body.amount
+      };
+      const invoice = await storage.updateInvoice(id, updateData);
       if (!invoice) {
         return res.status(404).json({ error: "Fatura bulunamadı" });
       }
       res.json(invoice);
     } catch (error) {
+      console.error("Invoice update error:", error);
       res.status(400).json({ error: "Fatura güncellenemedi" });
     }
   });
@@ -151,23 +162,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/expenses", async (req, res) => {
     try {
-      const expenseData = insertExpenseSchema.parse(req.body);
+      // Convert amount to string if it's a number
+      const requestData = {
+        ...req.body,
+        amount: typeof req.body.amount === 'number' ? req.body.amount.toString() : req.body.amount
+      };
+      const expenseData = insertExpenseSchema.parse(requestData);
       const expense = await storage.createExpense(expenseData);
       res.json(expense);
     } catch (error) {
-      res.status(400).json({ error: "Masraf oluşturulamadı" });
+      console.error("Expense creation error:", error);
+      res.status(400).json({ error: "Masraf oluşturulamadı", details: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
   app.put("/api/expenses/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const expense = await storage.updateExpense(id, req.body);
+      // Convert amount to string if it's a number
+      const updateData = {
+        ...req.body,
+        amount: req.body.amount && typeof req.body.amount === 'number' ? req.body.amount.toString() : req.body.amount
+      };
+      const expense = await storage.updateExpense(id, updateData);
       if (!expense) {
         return res.status(404).json({ error: "Masraf bulunamadı" });
       }
       res.json(expense);
     } catch (error) {
+      console.error("Expense update error:", error);
       res.status(400).json({ error: "Masraf güncellenemedi" });
     }
   });
