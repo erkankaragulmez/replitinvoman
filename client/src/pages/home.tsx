@@ -44,6 +44,34 @@ export default function Home() {
         onTabChange={setActiveTab}
       />
       
+      {/* Desktop Navigation Tabs */}
+      <div className="hidden sm:block bg-card border-b border-border sticky top-16 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex space-x-8" aria-label="Tabs">
+            {[
+              { id: "summary", label: "Panel", icon: "📊" },
+              { id: "customers", label: "Müşteriler", icon: "👥" },
+              { id: "invoices", label: "Faturalar", icon: "📄" },
+              { id: "expenses", label: "Masraflar", icon: "💳" }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors touch-target ${
+                  activeTab === tab.id
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
+                }`}
+                data-testid={`nav-${tab.id}`}
+              >
+                <span className="mr-2">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </div>
+      
       <main className="flex-1">
         {activeTab === "summary" && <Dashboard user={user} />}
         {activeTab === "customers" && <Customers user={user} />}

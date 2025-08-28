@@ -2,6 +2,16 @@
 
 InvoiceManager is a full-stack invoice and expense management application built with a React frontend and Express.js backend. The application allows users to manage customers, create and track invoices, record expenses, and view financial summaries through an intuitive dashboard. It features user authentication, CRUD operations for all entities, and responsive design with Turkish language support.
 
+## Recent Updates (28 Ağustos 2025)
+
+✓ Backend API'leri tam olarak çalışır duruma getirildi
+✓ TypeScript hataları düzeltildi (storage.ts)
+✓ Müşteri oluşturma API'si test edildi ve çalışıyor
+✓ Fatura oluşturma API'si test edildi ve çalışıyor  
+✓ Masraf oluşturma API'si test edildi ve çalışıyor
+✓ Desktop navigation menüsü eklendi
+✓ Responsive tasarım iyileştirildi
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.

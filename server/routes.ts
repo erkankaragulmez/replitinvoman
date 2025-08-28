@@ -105,7 +105,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const invoice = await storage.createInvoice(invoiceData);
       res.json(invoice);
     } catch (error) {
-      res.status(400).json({ error: "Fatura oluşturulamadı" });
+      console.error("Invoice creation error:", error);
+      res.status(400).json({ error: "Fatura oluşturulamadı", details: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
