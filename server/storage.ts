@@ -103,12 +103,15 @@ export class MemStorage implements IStorage {
 
   async createInvoice(insertInvoice: InsertInvoice): Promise<Invoice> {
     const id = randomUUID();
+    const paidStatus = insertInvoice.paid || false;
+    const paidAmount = paidStatus ? insertInvoice.amount : "0";
+    
     const invoice: Invoice = { 
       ...insertInvoice, 
       id,
       description: insertInvoice.description || null,
-      paid: insertInvoice.paid || false,
-      paidAmount: "0",
+      paid: paidStatus,
+      paidAmount,
       createdAt: new Date()
     };
     this.invoices.set(id, invoice);
@@ -120,6 +123,16 @@ export class MemStorage implements IStorage {
     if (!invoice) return undefined;
     
     const updatedInvoice = { ...invoice, ...updateData };
+    
+    // If paid is set to true, set paidAmount to full amount
+    if (updateData.paid === true) {
+      updatedInvoice.paidAmount = updatedInvoice.amount;
+    }
+    // If paid is set to false, reset paidAmount to 0
+    else if (updateData.paid === false) {
+      updatedInvoice.paidAmount = "0";
+    }
+    
     this.invoices.set(id, updatedInvoice);
     return updatedInvoice;
   }

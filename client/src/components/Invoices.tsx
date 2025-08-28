@@ -498,7 +498,7 @@ export function Invoices({ user }: InvoicesProps) {
                 data-testid="checkbox-invoice-paid"
               />
               <label htmlFor="paid" className="text-sm font-medium text-foreground">
-                Ödendi
+                Tam Ödeme (Fatura tutarının tamamı ödenmiş olarak işaretler)
               </label>
             </div>
 

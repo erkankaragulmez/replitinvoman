@@ -140,26 +140,6 @@ export function Dashboard({ user }: DashboardProps) {
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <button
-          onClick={calculateMonthlyProfitLoss}
-          className="flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors touch-target"
-          data-testid="calculate-monthly-profit-loss"
-        >
-          <Calculator className="h-4 w-4 mr-2" />
-          Aylık Profit/Loss Hesapla
-        </button>
-        <button
-          onClick={calculateYearlyProfitLoss}
-          className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md font-medium hover:bg-green-700 transition-colors touch-target"
-          data-testid="calculate-yearly-profit-loss"
-        >
-          <TrendingUp className="h-4 w-4 mr-2" />
-          Yıllık Profit/Loss Hesapla
-        </button>
-      </div>
-
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         <DataCard
@@ -191,6 +171,26 @@ export function Dashboard({ user }: DashboardProps) {
           subtitle={`${stats.unpaidInvoices} fatura beklemede`}
           className="border-orange-200 bg-orange-50"
         />
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <button
+          onClick={calculateMonthlyProfitLoss}
+          className="flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors touch-target"
+          data-testid="calculate-monthly-profit-loss"
+        >
+          <Calculator className="h-4 w-4 mr-2" />
+          Aylık Profit/Loss Hesapla
+        </button>
+        <button
+          onClick={calculateYearlyProfitLoss}
+          className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md font-medium hover:bg-green-700 transition-colors touch-target"
+          data-testid="calculate-yearly-profit-loss"
+        >
+          <TrendingUp className="h-4 w-4 mr-2" />
+          Yıllık Profit/Loss Hesapla
+        </button>
       </div>
 
       {/* Profit/Loss Results */}
