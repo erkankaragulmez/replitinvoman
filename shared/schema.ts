@@ -25,6 +25,7 @@ export const invoices = pgTable("invoices", {
   customerId: varchar("customer_id").notNull().references(() => customers.id),
   description: text("description"),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paidAmount: decimal("paid_amount", { precision: 10, scale: 2 }).default("0"),
   paid: boolean("paid").default(false),
   date: text("date").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -39,17 +40,29 @@ export const expenses = pgTable("expenses", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const payments = pgTable("payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  invoiceId: varchar("invoice_id").notNull().references(() => invoices.id),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paymentDate: text("payment_date").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true });
-export const insertInvoiceSchema = createInsertSchema(invoices).omit({ id: true, createdAt: true });
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({ id: true, createdAt: true, paidAmount: true });
 export const insertExpenseSchema = createInsertSchema(expenses).omit({ id: true, createdAt: true });
+export const insertPaymentSchema = createInsertSchema(payments).omit({ id: true, createdAt: true });
 
 export type User = typeof users.$inferSelect;
 export type Customer = typeof customers.$inferSelect;
 export type Invoice = typeof invoices.$inferSelect;
 export type Expense = typeof expenses.$inferSelect;
+export type Payment = typeof payments.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type InsertExpense = z.infer<typeof insertExpenseSchema>;
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;

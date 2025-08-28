@@ -1,4 +1,4 @@
-import { type User, type Customer, type Invoice, type Expense, type InsertUser, type InsertCustomer, type InsertInvoice, type InsertExpense } from "@shared/schema";
+import { type User, type Customer, type Invoice, type Expense, type Payment, type InsertUser, type InsertCustomer, type InsertInvoice, type InsertExpense, type InsertPayment } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -27,6 +27,11 @@ export interface IStorage {
   createExpense(expense: InsertExpense): Promise<Expense>;
   updateExpense(id: string, expense: Partial<Expense>): Promise<Expense | undefined>;
   deleteExpense(id: string): Promise<boolean>;
+  
+  // Payment methods
+  getPayments(invoiceId: string): Promise<Payment[]>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  deletePayment(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -34,6 +39,7 @@ export class MemStorage implements IStorage {
   private customers: Map<string, Customer> = new Map();
   private invoices: Map<string, Invoice> = new Map();
   private expenses: Map<string, Expense> = new Map();
+  private payments: Map<string, Payment> = new Map();
 
   // User methods
   async getUser(id: string): Promise<User | undefined> {
@@ -102,6 +108,7 @@ export class MemStorage implements IStorage {
       id,
       description: insertInvoice.description || null,
       paid: insertInvoice.paid || false,
+      paidAmount: "0",
       createdAt: new Date()
     };
     this.invoices.set(id, invoice);
@@ -152,6 +159,56 @@ export class MemStorage implements IStorage {
 
   async deleteExpense(id: string): Promise<boolean> {
     return this.expenses.delete(id);
+  }
+
+  // Payment methods
+  async getPayments(invoiceId: string): Promise<Payment[]> {
+    return Array.from(this.payments.values()).filter(payment => payment.invoiceId === invoiceId);
+  }
+
+  async createPayment(insertPayment: InsertPayment): Promise<Payment> {
+    const id = randomUUID();
+    const payment: Payment = { 
+      ...insertPayment, 
+      id,
+      notes: insertPayment.notes || null,
+      createdAt: new Date()
+    };
+    this.payments.set(id, payment);
+    
+    // Update invoice paid amount and status
+    await this.updateInvoicePaidAmount(insertPayment.invoiceId);
+    
+    return payment;
+  }
+
+  async deletePayment(id: string): Promise<boolean> {
+    const payment = this.payments.get(id);
+    if (!payment) return false;
+    
+    const deleted = this.payments.delete(id);
+    if (deleted) {
+      // Update invoice paid amount and status
+      await this.updateInvoicePaidAmount(payment.invoiceId);
+    }
+    return deleted;
+  }
+
+  private async updateInvoicePaidAmount(invoiceId: string): Promise<void> {
+    const invoice = this.invoices.get(invoiceId);
+    if (!invoice) return;
+    
+    const payments = await this.getPayments(invoiceId);
+    const totalPaid = payments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
+    const invoiceAmount = parseFloat(invoice.amount);
+    
+    const updatedInvoice = {
+      ...invoice,
+      paidAmount: totalPaid.toString(),
+      paid: totalPaid >= invoiceAmount
+    };
+    
+    this.invoices.set(invoiceId, updatedInvoice);
   }
 }
 

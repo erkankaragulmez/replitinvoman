@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertCustomerSchema, insertInvoiceSchema, insertExpenseSchema } from "@shared/schema";
+import { insertUserSchema, insertCustomerSchema, insertInvoiceSchema, insertExpenseSchema, insertPaymentSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
@@ -205,6 +205,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(400).json({ error: "Masraf silinemedi" });
+    }
+  });
+
+  // Payment routes
+  app.get("/api/payments/:invoiceId", async (req, res) => {
+    try {
+      const { invoiceId } = req.params;
+      const payments = await storage.getPayments(invoiceId);
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ error: "Ödemeler alınamadı" });
+    }
+  });
+
+  app.post("/api/payments", async (req, res) => {
+    try {
+      // Convert amount to string if it's a number
+      const requestData = {
+        ...req.body,
+        amount: typeof req.body.amount === 'number' ? req.body.amount.toString() : req.body.amount
+      };
+      const paymentData = insertPaymentSchema.parse(requestData);
+      const payment = await storage.createPayment(paymentData);
+      res.json(payment);
+    } catch (error) {
+      console.error("Payment creation error:", error);
+      res.status(400).json({ error: "Ödeme oluşturulamadı", details: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.delete("/api/payments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deletePayment(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Ödeme bulunamadı" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(400).json({ error: "Ödeme silinemedi" });
     }
   });
 

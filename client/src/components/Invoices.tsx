@@ -3,8 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Modal } from "./Modal";
+import { Payments } from "./Payments";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Plus, Edit2, Trash2, FileText, Eye, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Plus, Edit2, Trash2, FileText, Eye, CheckCircle, XCircle, Clock, CreditCard } from "lucide-react";
 import type { Invoice, Customer } from "@shared/schema";
 
 interface InvoicesProps {
@@ -13,7 +14,9 @@ interface InvoicesProps {
 
 export function Invoices({ user }: InvoicesProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [formData, setFormData] = useState({
     customerId: "",
     description: "",
@@ -163,16 +166,34 @@ export function Invoices({ user }: InvoicesProps) {
     );
   };
 
-  const getStatusBadge = (paid: boolean) => {
-    return paid ? (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-        Ödenmiş
-      </span>
-    ) : (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-        Ödenmemiş
-      </span>
-    );
+  const getStatusBadge = (invoice: Invoice) => {
+    const totalAmount = parseFloat(invoice.amount);
+    const paidAmount = parseFloat(invoice.paidAmount || "0");
+    
+    if (paidAmount === 0) {
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          Ödenmemiş
+        </span>
+      );
+    } else if (paidAmount >= totalAmount) {
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          Ödenmiş
+        </span>
+      );
+    } else {
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+          Kısmi Ödendi
+        </span>
+      );
+    }
+  };
+
+  const openPaymentModal = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setIsPaymentModalOpen(true);
   };
 
   if (isLoading) {
@@ -237,7 +258,7 @@ export function Invoices({ user }: InvoicesProps) {
                           {getCustomerName(invoice.customerId)}
                         </p>
                       </div>
-                      {getStatusBadge(invoice.paid || false)}
+                      {getStatusBadge(invoice)}
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
@@ -255,7 +276,30 @@ export function Invoices({ user }: InvoicesProps) {
                         <p className="text-sm">{invoice.description}</p>
                       </div>
                     )}
+                    {/* Payment Info */}
+                    {parseFloat(invoice.paidAmount || "0") > 0 && (
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Ödenen:</span>
+                          <span className="font-semibold text-green-600">{formatCurrency(parseFloat(invoice.paidAmount || "0"))}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Kalan:</span>
+                          <span className="font-semibold text-orange-600">{formatCurrency(parseFloat(invoice.amount) - parseFloat(invoice.paidAmount || "0"))}</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="flex justify-end space-x-2 mt-4">
+                      {parseFloat(invoice.amount) > parseFloat(invoice.paidAmount || "0") && (
+                        <button
+                          onClick={() => openPaymentModal(invoice)}
+                          className="p-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-md transition-colors touch-target"
+                          title="Ödeme Ekle"
+                          data-testid={`button-payment-invoice-${invoice.id}`}
+                        >
+                          <CreditCard className="h-4 w-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => openModal(invoice)}
                         className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors touch-target"
@@ -332,14 +376,25 @@ export function Invoices({ user }: InvoicesProps) {
                             {formatCurrency(parseFloat(invoice.amount.toString()))}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            {getStatusBadge(invoice.paid || false)}
+                            {getStatusBadge(invoice)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex justify-end space-x-2">
+                              {parseFloat(invoice.amount) > parseFloat(invoice.paidAmount || "0") && (
+                                <button
+                                  onClick={() => openPaymentModal(invoice)}
+                                  className="text-muted-foreground hover:text-primary transition-colors"
+                                  title="Ödeme Ekle"
+                                  data-testid={`button-payment-invoice-${invoice.id}`}
+                                >
+                                  <CreditCard className="h-4 w-4" />
+                                </button>
+                              )}
                               <button
                                 onClick={() => openModal(invoice)}
                                 className="text-muted-foreground hover:text-foreground transition-colors"
                                 title="Düzenle"
+                                data-testid={`button-edit-invoice-${invoice.id}`}
                               >
                                 <Edit2 className="h-4 w-4" />
                               </button>
@@ -347,6 +402,7 @@ export function Invoices({ user }: InvoicesProps) {
                                 onClick={() => handleDelete(invoice.id)}
                                 className="text-muted-foreground hover:text-destructive transition-colors"
                                 title="Sil"
+                                data-testid={`button-delete-invoice-${invoice.id}`}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </button>
@@ -475,6 +531,18 @@ export function Invoices({ user }: InvoicesProps) {
               </button>
             </div>
           </form>
+        </Modal>
+
+        {/* Payment Modal */}
+        <Modal
+          isOpen={isPaymentModalOpen}
+          onClose={() => {
+            setIsPaymentModalOpen(false);
+            setSelectedInvoice(null);
+          }}
+          title={selectedInvoice ? `Fatura #${selectedInvoice.id.slice(-8)} - Ödeme Ekle` : "Ödeme Ekle"}
+        >
+          {selectedInvoice && <Payments invoice={selectedInvoice} />}
         </Modal>
       </div>
     </section>

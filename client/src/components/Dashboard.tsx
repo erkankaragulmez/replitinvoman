@@ -73,16 +73,21 @@ export function Dashboard({ user }: DashboardProps) {
     const yearlyInvoices = filterByYear(invoices, year);
     const yearlyExpenses = filterByYear(expenses, year);
 
-    // Calculate totals
-    const monthlyRevenue = monthlyInvoices.reduce((sum, inv) => sum + parseFloat(inv.amount.toString()), 0);
+    // Calculate totals (using paid amounts for actual revenue)
+    const monthlyRevenue = monthlyInvoices.reduce((sum, inv) => sum + parseFloat(inv.paidAmount || "0"), 0);
     const monthlyExpenseTotal = monthlyExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount.toString()), 0);
-    const yearlyRevenue = yearlyInvoices.reduce((sum, inv) => sum + parseFloat(inv.amount.toString()), 0);
+    const yearlyRevenue = yearlyInvoices.reduce((sum, inv) => sum + parseFloat(inv.paidAmount || "0"), 0);
     const yearlyExpenseTotal = yearlyExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount.toString()), 0);
 
-    // Paid/unpaid invoices
-    const paidInvoices = monthlyInvoices.filter(inv => inv.paid);
-    const unpaidInvoices = monthlyInvoices.filter(inv => !inv.paid);
-    const pendingAmount = unpaidInvoices.reduce((sum, inv) => sum + parseFloat(inv.amount.toString()), 0);
+    // Invoice payment status
+    const fullyPaidInvoices = monthlyInvoices.filter(inv => inv.paid);
+    const partiallyPaidInvoices = monthlyInvoices.filter(inv => !inv.paid && parseFloat(inv.paidAmount || "0") > 0);
+    const unpaidInvoices = monthlyInvoices.filter(inv => parseFloat(inv.paidAmount || "0") === 0);
+    const pendingAmount = monthlyInvoices.reduce((sum, inv) => {
+      const total = parseFloat(inv.amount.toString());
+      const paid = parseFloat(inv.paidAmount || "0");
+      return sum + (total - paid);
+    }, 0);
 
     return {
       monthlyRevenue,
@@ -90,7 +95,8 @@ export function Dashboard({ user }: DashboardProps) {
       yearlyRevenue,
       yearlyExpenseTotal,
       totalInvoices: monthlyInvoices.length,
-      paidInvoices: paidInvoices.length,
+      paidInvoices: fullyPaidInvoices.length,
+      partiallyPaidInvoices: partiallyPaidInvoices.length,
       unpaidInvoices: unpaidInvoices.length,
       pendingAmount,
       totalCustomers: customers.length,
