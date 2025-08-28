@@ -1,0 +1,866 @@
+import React, { useState, useEffect } from "react";
+
+// TRY para formatlama
+const formatCurrency = (num) =>
+  "₺ " + num.toLocaleString("tr-TR", { minimumFractionDigits: 2 });
+
+const InputField = ({ label, value, onChange, type = "text", required }) => (
+  <div style={{ marginBottom: 12 }}>
+    <label style={{ display: "block", marginBottom: 4, fontWeight: "600" }}>
+      {label} {required && <span style={{ color: "red" }}>*</span>}
+    </label>
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{
+        width: "100%",
+        padding: 8,
+        fontSize: 16,
+        borderRadius: 4,
+        border: "1px solid #ccc",
+        boxSizing: "border-box",
+      }}
+      required={required}
+      aria-label={label}
+    />
+  </div>
+);
+
+const Modal = ({ visible, onClose, title, children }) => {
+  if (!visible) return null;
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      style={{
+        position: "fixed",
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{ backgroundColor: "#fff", borderRadius: 8, padding: 24, maxWidth: 400, width: "90%" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 id="modal-title" style={{ marginTop: 0, marginBottom: 16 }}>{title}</h3>
+        {children}
+        <button
+          onClick={onClose}
+          style={{
+            marginTop: 16,
+            padding: "8px 16px",
+            backgroundColor: "#bbb",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+            color: "#333",
+          }}
+        >
+          İptal
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const Auth = ({ onLogin }) => {
+  const [isRegister, setIsRegister] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isRegister) {
+      if (!name.trim() || !email.trim() || !password.trim()) {
+        alert("Lütfen tüm alanları doldurun.");
+        return;
+      }
+      let users = JSON.parse(localStorage.getItem("users") || "[]");
+      const exists = users.find((u) => u.email === email);
+      if (exists) {
+        alert("Bu email zaten kayıtlı!");
+        return;
+      }
+      users.push({ name, email, password });
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("Kayıt başarılı! Giriş yapabilirsiniz.");
+      setIsRegister(false);
+      setName(""); setEmail(""); setPassword("");
+    } else {
+      let users = JSON.parse(localStorage.getItem("users") || "[]");
+      const user = users.find((u) => u.email === email && u.password === password);
+      if (user) {
+        onLogin(user);
+      } else {
+        alert("Email veya şifre yanlış.");
+      }
+    }
+  };
+
+  return (
+    <div
+      style={{
+        maxWidth: 360,
+        margin: "40px auto",
+        padding: 24,
+        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+        borderRadius: 8,
+        background: "#fff",
+      }}
+    >
+      <h2 style={{ marginBottom: 20, textAlign: "center", color: "#2196f3" }}>
+        {isRegister ? "Kayıt Ol" : "Giriş Yap"}
+      </h2>
+      <form onSubmit={handleSubmit} noValidate>
+        {isRegister && (
+          <InputField
+            label="İsim"
+            value={name}
+            onChange={setName}
+            required
+          />
+        )}
+        <InputField
+          label="Email"
+          type="email"
+          value={email}
+          onChange={setEmail}
+          required
+        />
+        <InputField
+          label="Şifre"
+          type="password"
+          value={password}
+          onChange={setPassword}
+          required
+        />
+        <button
+          type="submit"
+          style={{
+            width: "100%",
+            padding: 12,
+            fontSize: 16,
+            backgroundColor: "#2196f3",
+            color: "#fff",
+            fontWeight: "700",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+          }}
+        >
+          {isRegister ? "Kayıt Ol" : "Giriş Yap"}
+        </button>
+      </form>
+      <p style={{ marginTop: 16, textAlign: "center" }}>
+        {isRegister ? "Zaten kayıtlı mısınız? " : "Hesabınız yok mu? "}
+        <button
+          onClick={() => setIsRegister(!isRegister)}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#2196f3",
+            cursor: "pointer",
+            fontWeight: "600",
+          }}
+        >
+          {isRegister ? "Giriş Yap" : "Kayıt Ol"}
+        </button>
+      </p>
+    </div>
+  );
+};
+
+const Header = ({ onLogout }) => (
+  <header
+    style={{
+      display: "flex",
+      alignItems: "center",
+      padding: "8px 16px",
+      borderBottom: "1px solid #ddd",
+      backgroundColor: "#fff",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
+    }}
+    aria-label="Invoice Manager Navigation"
+  >
+    <h1 style={{ margin: 0, fontWeight: "700", fontSize: 22, color: "#212121" }}>
+      Invoice <span style={{ color: "#2196f3" }}>Manager</span>
+    </h1>
+    <nav
+      style={{ marginLeft: "auto", display: "flex", gap: 20, alignItems: "center" }}
+      aria-label="User navigation"
+    >
+      <button title="Notification" aria-label="Notification" style={{ fontSize: 20, background: "none", border: "none", cursor: "pointer" }}>
+        🔔
+      </button>
+      <button title="Sync" aria-label="Sync" style={{ fontSize: 20, background: "none", border: "none", cursor: "pointer" }} onClick={() => window.location.reload()}>
+        🔄
+      </button>
+      <button title="Logout" aria-label="Logout" style={{ fontSize: 20, background: "none", border: "none", cursor: "pointer" }} onClick={onLogout}>
+        ⚙️
+      </button>
+    </nav>
+  </header>
+);
+
+const MonthSelector = ({ month, year, onChangeMonth, onChangeYear }) => {
+  const months = [
+    { value: 1, label: "Ocak" },
+    { value: 2, label: "Şubat" },
+    { value: 3, label: "Mart" },
+    { value: 4, label: "Nisan" },
+    { value: 5, label: "Mayıs" },
+    { value: 6, label: "Haziran" },
+    { value: 7, label: "Temmuz" },
+    { value: 8, label: "Ağustos" },
+    { value: 9, label: "Eylül" },
+    { value: 10, label: "Ekim" },
+    { value: 11, label: "Kasım" },
+    { value: 12, label: "Aralık" },
+  ];
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+      <select
+        aria-label="Ay seçici"
+        value={month}
+        onChange={(e) => onChangeMonth(Number(e.target.value))}
+        style={{ padding: "6px 10px", borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }}
+      >
+        {months.map((m) => (
+          <option key={m.value} value={m.value}>
+            {m.label}
+          </option>
+        ))}
+      </select>
+      <button
+        aria-label="Önceki ay"
+        onClick={() => onChangeMonth(month === 1 ? 12 : month - 1)}
+        style={{
+          fontSize: 18,
+          borderRadius: 6,
+          border: "1px solid #ccc",
+          background: "#f0f0f0",
+          cursor: "pointer",
+          padding: "4px 10px",
+        }}
+      >
+        ◀
+      </button>
+      <span style={{ padding: 8, minWidth: 120, fontWeight: "600", textAlign: "center" }}>
+        {`${months[month - 1]?.label || ""} ${year}`}
+      </span>
+      <button
+        aria-label="Sonraki ay"
+        onClick={() => onChangeMonth(month === 12 ? 1 : month + 1)}
+        style={{
+          fontSize: 18,
+          borderRadius: 6,
+          border: "1px solid #ccc",
+          background: "#f0f0f0",
+          cursor: "pointer",
+          padding: "4px 10px",
+        }}
+      >
+        ▶
+      </button>
+    </div>
+  );
+};
+
+const DataCard = ({ title, mainValue, subData }) => (
+  <div
+    style={{
+      flex: 1,
+      margin: 4,
+      padding: 12,
+      borderRadius: 8,
+      border: "1px solid #ddd",
+      backgroundColor: "#fff",
+      minWidth: 140,
+    }}
+    aria-label={`${title} bilgisi`}
+  >
+    <h3 style={{ margin: "0 0 8px 0", color: "#c91723" }}>{title}</h3>
+    <p
+      style={{
+        fontSize: 20,
+        margin: "0 0 8px 0",
+        fontWeight: "700",
+        color: "#2196f3",
+      }}
+    >
+      {mainValue}
+    </p>
+    {subData &&
+      Object.entries(subData).map(([k, v]) => (
+        <p
+          key={k}
+          style={{ margin: 0, fontSize: 14, color: k.toLowerCase().includes("paid") ? "#388e3c" : "#c91723" }}
+        >
+          {k}: {v}
+        </p>
+      ))}
+  </div>
+);
+
+const Customers = () => {
+  const [customers, setCustomers] = useState(() => JSON.parse(localStorage.getItem("customers") || "[]"));
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [editCustomer, setEditCustomer] = useState(null);
+
+  const saveCustomers = (list) => {
+    setCustomers(list);
+    localStorage.setItem("customers", JSON.stringify(list));
+  };
+
+  const addCustomer = (e) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      alert("Müşteri ismi boş olamaz.");
+      return;
+    }
+    const newCustomer = { id: Date.now(), name, phone };
+    saveCustomers([...customers, newCustomer]);
+    setName("");
+    setPhone("");
+  };
+
+  const handleEditSave = () => {
+    if (!editCustomer.name.trim()) {
+      alert("Müşteri ismi boş olamaz.");
+      return;
+    }
+    saveCustomers(customers.map(c => (c.id === editCustomer.id ? editCustomer : c)));
+    setEditCustomer(null);
+  };
+
+  return (
+    <section aria-label="Müşteriler" style={{ backgroundColor: "#fff", padding: 16, borderRadius: 8, boxShadow: "0 0 6px rgba(0,0,0,0.05)" }}>
+      <h2 style={{ color: "#212121", marginBottom: 12 }}>Müşteriler</h2>
+      <form onSubmit={addCustomer} style={{ marginBottom: 16 }}>
+        <InputField label="Müşteri İsmi" value={name} onChange={setName} required />
+        <InputField label="Telefon" value={phone} onChange={setPhone} />
+        <button
+          type="submit"
+          style={{
+            backgroundColor: "#2196f3",
+            color: "#fff",
+            padding: "10px 16px",
+            border: "none",
+            borderRadius: 6,
+            fontWeight: "600",
+            cursor: "pointer",
+          }}
+        >
+          Yeni Müşteri Ekle
+        </button>
+      </form>
+
+      {customers.length === 0 ? (
+        <p>Henüz müşteri yok.</p>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {customers.map((c) => (
+            <li key={c.id} style={{ padding: "8px 12px", borderBottom: "1px solid #eee", fontWeight: "600", color: "#333", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>{c.name} {c.phone && `- ${c.phone}`}</span>
+              <button
+                onClick={() => setEditCustomer(c)}
+                style={{ background: "#2196f3", color: "#fff", border: "none", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}
+                aria-label={`Düzenle ${c.name}`}
+              >
+                Düzenle
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Modal visible={!!editCustomer} onClose={() => setEditCustomer(null)} title="Müşteri Düzenle">
+        {editCustomer && (
+          <>
+            <InputField label="Müşteri İsmi" value={editCustomer.name} onChange={(v) => setEditCustomer({ ...editCustomer, name: v })} required />
+            <InputField label="Telefon" value={editCustomer.phone} onChange={(v) => setEditCustomer({ ...editCustomer, phone: v })} />
+            <button
+              onClick={handleEditSave}
+              style={{ backgroundColor: "#2196f3", color: "#fff", padding: "10px 16px", border: "none", borderRadius: 6, fontWeight: "600", cursor: "pointer", marginTop: 8 }}
+            >
+              Kaydet
+            </button>
+          </>
+        )}
+      </Modal>
+    </section>
+  );
+};
+
+const Invoices = () => {
+  const [invoices, setInvoices] = useState(() => JSON.parse(localStorage.getItem("invoices") || "[]"));
+  const [customers, setCustomers] = useState(() => JSON.parse(localStorage.getItem("customers") || "[]"));
+
+  const [customerId, setCustomerId] = useState(customers.length ? customers[0].id : "");
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [paid, setPaid] = useState(false);
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [editInvoice, setEditInvoice] = useState(null);
+
+  const saveInvoices = (list) => {
+    setInvoices(list);
+    localStorage.setItem("invoices", JSON.stringify(list));
+  };
+
+  const addInvoice = (e) => {
+    e.preventDefault();
+    if (!customerId || !amount.trim() || isNaN(Number(amount)) || Number(amount) <= 0) {
+      alert("Lütfen geçerli müşteri ve tutar girin.");
+      return;
+    }
+    if (!date) {
+      alert("Lütfen geçerli bir tarih girin.");
+      return;
+    }
+    const newInvoice = {
+      id: Date.now(),
+      customerId,
+      description: description.trim() || "-",
+      amount: Number(amount),
+      paid,
+      date,
+    };
+    saveInvoices([...invoices, newInvoice]);
+    setDescription("");
+    setAmount("");
+    setPaid(false);
+    setDate(new Date().toISOString().slice(0, 10));
+  };
+
+  const getCustomerName = (id) => {
+    const cust = customers.find((c) => c.id === id);
+    return cust ? cust.name : "Bilinmiyor";
+  };
+
+  const handleEditSave = () => {
+    if (!editInvoice.customerId || !editInvoice.amount || isNaN(Number(editInvoice.amount)) || Number(editInvoice.amount) <= 0) {
+      alert("Lütfen geçerli müşteri ve tutar girin.");
+      return;
+    }
+    if (!editInvoice.date) {
+      alert("Lütfen geçerli bir tarih girin.");
+      return;
+    }
+    saveInvoices(invoices.map(i => (i.id === editInvoice.id ? { ...editInvoice, amount: Number(editInvoice.amount) } : i)));
+    setEditInvoice(null);
+  };
+
+  return (
+    <section aria-label="Faturalar" style={{ backgroundColor: "#fff", padding: 16, borderRadius: 8, boxShadow: "0 0 6px rgba(0,0,0,0.05)" }}>
+      <h2 style={{ color: "#212121", marginBottom: 12 }}>Faturalar</h2>
+      {customers.length === 0 ? (
+        <p>Önce müşteri ekleyin.</p>
+      ) : (
+        <form onSubmit={addInvoice} style={{ marginBottom: 16 }}>
+          <label style={{ fontWeight: "600", display: "block", marginBottom: 6 }}>Müşteri</label>
+          <select
+            aria-label="Müşteri seç"
+            value={customerId}
+            onChange={(e) => setCustomerId(Number(e.target.value))}
+            style={{ width: "100%", padding: 8, fontSize: 16, borderRadius: 4, border: "1px solid #ccc", marginBottom: 12 }}
+          >
+            {customers.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <InputField label="Açıklama" value={description} onChange={setDescription} />
+          <InputField label="Tutar" value={amount} onChange={setAmount} type="number" required />
+          <InputField label="Tarih" value={date} onChange={setDate} type="date" required />
+          <label style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, marginBottom: 12 }}>
+            <input type="checkbox" checked={paid} onChange={(e) => setPaid(e.target.checked)} aria-label="Ödendi mi?" />
+            Ödendi
+          </label>
+          <button type="submit" style={{ backgroundColor: "#2196f3", color: "#fff", padding: "10px 16px", border: "none", borderRadius: 6, fontWeight: "600", cursor: "pointer" }}>
+            Yeni Fatura Ekle
+          </button>
+        </form>
+      )}
+
+      {invoices.length === 0 ? (
+        <p>Henüz fatura yok.</p>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse" }} aria-label="Fatura listesi">
+          <thead>
+            <tr style={{ backgroundColor: "#2196f3", color: "#fff" }}>
+              <th style={{ padding: 8, textAlign: "left" }}>Müşteri</th>
+              <th style={{ padding: 8, textAlign: "left" }}>Açıklama</th>
+              <th style={{ padding: 8, textAlign: "right" }}>Tutar</th>
+              <th style={{ padding: 8, textAlign: "center" }}>Ödendi</th>
+              <th style={{ padding: 8, textAlign: "center" }}>Tarih</th>
+              <th style={{ padding: 8, textAlign: "center" }}>Düzenle</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invoices.map((inv) => (
+              <tr key={inv.id} style={{ borderBottom: "1px solid #eee" }}>
+                <td style={{ padding: 8 }}>{getCustomerName(inv.customerId)}</td>
+                <td style={{ padding: 8 }}>{inv.description}</td>
+                <td style={{ padding: 8, textAlign: "right" }}>{formatCurrency(inv.amount)}</td>
+                <td style={{ padding: 8, textAlign: "center" }}>{inv.paid ? "✔️" : "❌"}</td>
+                <td style={{ padding: 8, textAlign: "center" }}>{new Date(inv.date).toLocaleDateString()}</td>
+                <td style={{ padding: 8, textAlign: "center" }}>
+                  <button
+                    onClick={() => setEditInvoice(inv)}
+                    style={{ background: "#2196f3", color: "#fff", border: "none", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}
+                    aria-label={`Düzenle ${getCustomerName(inv.customerId)} faturası`}
+                  >
+                    Düzenle
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      <Modal visible={!!editInvoice} onClose={() => setEditInvoice(null)} title="Fatura Düzenle">
+        {editInvoice && (
+          <>
+            <label style={{ fontWeight: "600", display: "block", marginBottom: 6 }}>Müşteri</label>
+            <select
+              aria-label="Müşteri seç"
+              value={editInvoice.customerId}
+              onChange={(e) => setEditInvoice({ ...editInvoice, customerId: Number(e.target.value) })}
+              style={{ width: "100%", padding: 8, fontSize: 16, borderRadius: 4, border: "1px solid #ccc", marginBottom: 12 }}
+            >
+              {customers.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <InputField label="Açıklama" value={editInvoice.description} onChange={(v) => setEditInvoice({ ...editInvoice, description: v })} />
+            <InputField label="Tutar" value={editInvoice.amount} onChange={(v) => setEditInvoice({ ...editInvoice, amount: v })} type="number" required />
+            <InputField label="Tarih" value={editInvoice.date} onChange={(v) => setEditInvoice({ ...editInvoice, date: v })} type="date" required />
+            <label style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, marginBottom: 12 }}>
+              <input type="checkbox" checked={editInvoice.paid} onChange={(e) => setEditInvoice({ ...editInvoice, paid: e.target.checked })} aria-label="Ödendi mi?" />
+              Ödendi
+            </label>
+            <button
+              onClick={handleEditSave}
+              style={{ backgroundColor: "#2196f3", color: "#fff", padding: "10px 16px", border: "none", borderRadius: 6, fontWeight: "600", cursor: "pointer", marginTop: 8 }}
+            >
+              Kaydet
+            </button>
+          </>
+        )}
+      </Modal>
+    </section>
+  );
+};
+
+const Expenses = () => {
+  const [expenses, setExpenses] = useState(() => JSON.parse(localStorage.getItem("expenses") || "[]"));
+  const [label, setLabel] = useState("");
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [editExpense, setEditExpense] = useState(null);
+
+  const saveExpenses = (list) => {
+    setExpenses(list);
+    localStorage.setItem("expenses", JSON.stringify(list));
+  };
+
+  const addExpense = (e) => {
+    e.preventDefault();
+    if (!label.trim()) {
+      alert("Masraf açıklaması boş olamaz.");
+      return;
+    }
+    if (!amount.trim() || isNaN(Number(amount)) || Number(amount) <= 0) {
+      alert("Geçerli tutar girin.");
+      return;
+    }
+    if (!date) {
+      alert("Lütfen geçerli bir tarih girin.");
+      return;
+    }
+    const newExpense = { id: Date.now(), label, amount: Number(amount), date };
+    saveExpenses([...expenses, newExpense]);
+    setLabel("");
+    setAmount("");
+    setDate(new Date().toISOString().slice(0, 10));
+  };
+
+  const handleEditSave = () => {
+    if (!editExpense.label.trim()) {
+      alert("Masraf açıklaması boş olamaz.");
+      return;
+    }
+    if (!editExpense.amount || isNaN(Number(editExpense.amount)) || Number(editExpense.amount) <= 0) {
+      alert("Geçerli tutar girin.");
+      return;
+    }
+    if (!editExpense.date) {
+      alert("Lütfen geçerli bir tarih girin.");
+      return;
+    }
+    saveExpenses(expenses.map(e => (e.id === editExpense.id ? { ...editExpense, amount: Number(editExpense.amount) } : e)));
+    setEditExpense(null);
+  };
+
+  return (
+    <section aria-label="Masraflar" style={{ backgroundColor: "#fff", padding: 16, borderRadius: 8, boxShadow: "0 0 6px rgba(0,0,0,0.05)" }}>
+      <h2 style={{ color: "#212121", marginBottom: 12 }}>Masraflar</h2>
+      <form onSubmit={addExpense} style={{ marginBottom: 16 }}>
+        <InputField label="Masraf Açıklaması" value={label} onChange={setLabel} required />
+        <InputField label="Tutar" value={amount} onChange={setAmount} type="number" required />
+        <InputField label="Tarih" value={date} onChange={setDate} type="date" required />
+        <button type="submit" style={{ backgroundColor: "#2196f3", color: "#fff", padding: "10px 16px", border: "none", borderRadius: 6, fontWeight: "600", cursor: "pointer" }}>
+          Yeni Masraf Ekle
+        </button>
+      </form>
+
+      {expenses.length === 0 ? (
+        <p>Henüz masraf yok.</p>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse" }} aria-label="Masraf listesi">
+          <thead>
+            <tr style={{ backgroundColor: "#2196f3", color: "#fff" }}>
+              <th style={{ padding: 8, textAlign: "left" }}>Açıklama</th>
+              <th style={{ padding: 8, textAlign: "right" }}>Tutar</th>
+              <th style={{ padding: 8, textAlign: "center" }}>Tarih</th>
+              <th style={{ padding: 8, textAlign: "center" }}>Düzenle</th>
+            </tr>
+          </thead>
+          <tbody>
+            {expenses.map((exp) => (
+              <tr key={exp.id} style={{ borderBottom: "1px solid #eee" }}>
+                <td style={{ padding: 8 }}>{exp.label}</td>
+                <td style={{ padding: 8, textAlign: "right" }}>{formatCurrency(exp.amount)}</td>
+                <td style={{ padding: 8, textAlign: "center" }}>{new Date(exp.date).toLocaleDateString()}</td>
+                <td style={{ padding: 8, textAlign: "center" }}>
+                  <button
+                    onClick={() => setEditExpense(exp)}
+                    style={{ background: "#2196f3", color: "#fff", border: "none", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}
+                    aria-label={`Düzenle ${exp.label} masrafı`}
+                  >
+                    Düzenle
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      <Modal visible={!!editExpense} onClose={() => setEditExpense(null)} title="Masraf Düzenle">
+        {editExpense && (
+          <>
+            <InputField label="Masraf Açıklaması" value={editExpense.label} onChange={(v) => setEditExpense({ ...editExpense, label: v })} required />
+            <InputField label="Tutar" value={editExpense.amount} onChange={(v) => setEditExpense({ ...editExpense, amount: v })} type="number" required />
+            <InputField label="Tarih" value={editExpense.date} onChange={(v) => setEditExpense({ ...editExpense, date: v })} type="date" required />
+            <button
+              onClick={handleEditSave}
+              style={{ backgroundColor: "#2196f3", color: "#fff", padding: "10px 16px", border: "none", borderRadius: 6, fontWeight: "600", cursor: "pointer", marginTop: 8 }}
+            >
+              Kaydet
+            </button>
+          </>
+        )}
+      </Modal>
+    </section>
+  );
+};
+
+const Dashboard = ({ user, onLogout }) => {
+  const now = new Date();
+  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(now.getFullYear());
+  const [profitLossMonthly, setProfitLossMonthly] = useState(null);
+  const [profitLossYearly, setProfitLossYearly] = useState(null);
+  const [activeTab, setActiveTab] = useState("summary");
+
+  const invoices = JSON.parse(localStorage.getItem("invoices") || "[]");
+  const expenses = JSON.parse(localStorage.getItem("expenses") || "[]");
+
+  // Filtreleme fonksiyonları
+  const filterByMonthYear = (items, m, y) =>
+    items.filter((item) => {
+      const dt = new Date(item.date);
+      return dt.getMonth() + 1 === m && dt.getFullYear() === y;
+    });
+
+  const filterByYear = (items, y) =>
+    items.filter((item) => new Date(item.date).getFullYear() === y);
+
+  // Aylık veriler
+  const invoicesMonth = filterByMonthYear(invoices, month, year);
+  const expensesMonth = filterByMonthYear(expenses, month, year);
+
+  // Yıllık veriler
+  const invoicesYear = filterByYear(invoices, year);
+  const expensesYear = filterByYear(expenses, year);
+
+  // Toplamlar
+  const totalInvoiceAmountMonth = invoicesMonth.reduce((a, i) => a + i.amount, 0);
+  const totalExpensesMonth = expensesMonth.reduce((a, e) => a + e.amount, 0);
+
+  const totalInvoiceAmountYear = invoicesYear.reduce((a, i) => a + i.amount, 0);
+  const totalExpensesYear = expensesYear.reduce((a, e) => a + e.amount, 0);
+
+  const calculateProfitLossMonthly = () => {
+    setProfitLossMonthly(totalInvoiceAmountMonth - totalExpensesMonth);
+  };
+
+  const calculateProfitLossYearly = () => {
+    setProfitLossYearly(totalInvoiceAmountYear - totalExpensesYear);
+  };
+
+  const tabButtonStyle = (tab) => ({
+    padding: "10px 16px",
+    cursor: "pointer",
+    border: "none",
+    borderBottom: activeTab === tab ? "3px solid #2196f3" : "3px solid transparent",
+    background: "none",
+    fontWeight: activeTab === tab ? "700" : "600",
+    color: activeTab === tab ? "#2196f3" : "#444",
+    fontSize: 16,
+  });
+
+  return (
+    <>
+      <Header onLogout={onLogout} />
+      <main style={{ maxWidth: 960, margin: "16px auto", padding: 16, fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", color: "#212121" }}>
+        <nav aria-label="Ana sekmeler" style={{ display: "flex", borderBottom: "1px solid #ddd", marginBottom: 16 }}>
+          <button onClick={() => setActiveTab("summary")} style={tabButtonStyle("summary")} aria-current={activeTab === "summary" ? "page" : undefined}>Özet</button>
+          <button onClick={() => setActiveTab("customers")} style={tabButtonStyle("customers")}>Müşteriler</button>
+          <button onClick={() => setActiveTab("invoices")} style={tabButtonStyle("invoices")}>Faturalar</button>
+          <button onClick={() => setActiveTab("expenses")} style={tabButtonStyle("expenses")}>Masraflar</button>
+        </nav>
+
+        {activeTab === "summary" && (
+          <>
+            <p style={{ fontSize: 12, color: "#777", marginBottom: 16 }}>
+              Son senkronizasyon: {now.toLocaleTimeString()}
+            </p>
+
+            <MonthSelector
+              month={month}
+              year={year}
+              onChangeMonth={(m) => {
+                if (m === 12 && month === 1) setYear((y) => y - 1);
+                else if (m === 1 && month === 12) setYear((y) => y + 1);
+                setMonth(m);
+              }}
+              onChangeYear={setYear}
+            />
+
+            <button
+              onClick={calculateProfitLossMonthly}
+              style={{
+                display: "inline-block",
+                marginRight: 12,
+                padding: "10px 16px",
+                backgroundColor: "#2196f3",
+                border: "none",
+                borderRadius: 6,
+                color: "#fff",
+                fontWeight: "600",
+                cursor: "pointer",
+              }}
+              aria-label="Aylık Profit/Loss Hesapla"
+            >
+              📅 Aylık Profit/Loss Hesapla
+            </button>
+            <button
+              onClick={calculateProfitLossYearly}
+              style={{
+                display: "inline-block",
+                padding: "10px 16px",
+                backgroundColor: "#4caf50",
+                border: "none",
+                borderRadius: 6,
+                color: "#fff",
+                fontWeight: "600",
+                cursor: "pointer",
+              }}
+              aria-label="Yıllık Profit/Loss Hesapla"
+            >
+              📆 Yıllık Profit/Loss Hesapla
+            </button>
+
+            <section style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16, marginBottom: 16 }} aria-label="Invoice summary section">
+              <DataCard
+                title={`Invoices (${month}/${year})`}
+                mainValue={formatCurrency(totalInvoiceAmountMonth)}
+                subData={{ Count: invoicesMonth.length }}
+              />
+              <DataCard
+                title={`Expenses (${month}/${year})`}
+                mainValue={formatCurrency(totalExpensesMonth)}
+                subData={{ Count: expensesMonth.length }}
+              />
+              {profitLossMonthly !== null && (
+                <DataCard
+                  title={`Profit/Loss (${month}/${year})`}
+                  mainValue={formatCurrency(profitLossMonthly)}
+                />
+              )}
+            </section>
+
+            {profitLossYearly !== null && (
+              <section
+                style={{
+                  backgroundColor: "#e8f5e9",
+                  padding: 16,
+                  borderRadius: 8,
+                  boxShadow: "0 0 6px rgb(0 0 0 / 0.05)",
+                  textAlign: "center",
+                  color: profitLossYearly >= 0 ? "#388e3c" : "#c91723",
+                  fontWeight: "700",
+                  fontSize: 22,
+                }}
+                aria-label={`Yıllık Profit/Loss (${year})`}
+              >
+                Yıllık Profit/Loss ({year}): {formatCurrency(profitLossYearly)}
+              </section>
+            )}
+          </>
+        )}
+
+        {activeTab === "customers" && <Customers />}
+        {activeTab === "invoices" && <Invoices />}
+        {activeTab === "expenses" && <Expenses />}
+      </main>
+    </>
+  );
+};
+
+function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("loggedUser"));
+    if (storedUser) setUser(storedUser);
+  }, []);
+
+  const handleLogin = (user) => {
+    setUser(user);
+    localStorage.setItem("loggedUser", JSON.stringify(user));
+  };
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("loggedUser");
+  };
+
+  return <div>{user ? <Dashboard user={user} onLogout={handleLogout} /> : <Auth onLogin={handleLogin} />}</div>;
+}
+
+export default App;
