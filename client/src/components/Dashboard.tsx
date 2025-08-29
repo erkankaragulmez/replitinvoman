@@ -155,7 +155,7 @@ export function Dashboard({ user }: DashboardProps) {
         />
 
         <DataCard
-          title="Bekleyen Ödemeler"
+          title="Alacaklar"
           value={formatCurrency(stats.pendingAmount)}
           icon={Clock}
           subtitle="Ödenmemiş fatura tutarları"

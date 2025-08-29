@@ -132,7 +132,7 @@ export function Reports({ user }: ReportsProps) {
           <BarChart3 className="h-8 w-8 mr-3" />
           Raporlar
         </h1>
-        <p className="text-muted-foreground">Masraf ve fatura yaşlandırma raporları</p>
+        <p className="text-muted-foreground">Masraf ve alacak yaşlandırma raporları</p>
       </div>
 
       {/* Tab Navigation */}
@@ -161,7 +161,7 @@ export function Reports({ user }: ReportsProps) {
               data-testid="tab-aging-report"
             >
               <Clock className="h-4 w-4 inline mr-1" />
-              Fatura Yaşlandırma
+              Alacak Yaşlandırma
             </button>
           </nav>
         </div>
@@ -237,13 +237,13 @@ export function Reports({ user }: ReportsProps) {
           <div className="bg-card rounded-lg border border-border p-6">
             <h2 className="text-xl font-semibold mb-4 flex items-center">
               <Clock className="h-5 w-5 mr-2" />
-              Fatura Yaşlandırma Raporu
+              Alacak Yaşlandırma Raporu
             </h2>
             
             {agingReport.every(bucket => bucket.invoices.length === 0) ? (
               <div className="text-center py-8">
                 <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">Bekleyen fatura yok</p>
+                <p className="text-muted-foreground">Alacak yok</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -296,7 +296,7 @@ export function Reports({ user }: ReportsProps) {
                 {/* Aging Summary */}
                 <div className="mt-6 bg-primary/5 border border-primary/20 rounded-lg p-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">Toplam Bekleyen Tutar</h3>
+                    <h3 className="text-lg font-semibold">Toplam Alacak Tutarı</h3>
                     <p className="text-2xl font-bold text-primary">
                       {formatCurrency(agingReport.reduce((sum, bucket) => sum + bucket.total, 0))}
                     </p>
