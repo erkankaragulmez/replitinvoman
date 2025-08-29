@@ -4,7 +4,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Modal } from "./Modal";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Plus, Edit2, Trash2, CreditCard } from "lucide-react";
+import { Plus, Edit2, Trash2, CreditCard, Eye } from "lucide-react";
 import type { Expense } from "@shared/schema";
 
 interface ExpensesProps {
@@ -13,7 +13,9 @@ interface ExpensesProps {
 
 export function Expenses({ user }: ExpensesProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [viewingExpense, setViewingExpense] = useState<Expense | null>(null);
   const [formData, setFormData] = useState({
     label: "",
     amount: "",
@@ -141,6 +143,11 @@ export function Expenses({ user }: ExpensesProps) {
     setIsModalOpen(true);
   };
 
+  const openViewModal = (expense: Expense) => {
+    setViewingExpense(expense);
+    setIsViewModalOpen(true);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.label.trim() || !formData.amount.trim()) {
@@ -227,6 +234,14 @@ export function Expenses({ user }: ExpensesProps) {
                 </div>
                 <div className="flex justify-end space-x-2 mt-4">
                   <button
+                    onClick={() => openViewModal(expense)}
+                    className="p-2 text-muted-foreground hover:text-blue-600 hover:bg-accent rounded-md transition-colors touch-target"
+                    title="Görüntüle"
+                    data-testid={`button-view-expense-${expense.id}`}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </button>
+                  <button
                     onClick={() => openModal(expense)}
                     className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors touch-target"
                     title="Düzenle"
@@ -288,6 +303,13 @@ export function Expenses({ user }: ExpensesProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
+                          <button
+                            onClick={() => openViewModal(expense)}
+                            className="text-muted-foreground hover:text-blue-600 transition-colors"
+                            title="Görüntüle"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
                           <button
                             onClick={() => openModal(expense)}
                             className="text-muted-foreground hover:text-foreground transition-colors"
@@ -394,6 +416,46 @@ export function Expenses({ user }: ExpensesProps) {
               </button>
             </div>
           </form>
+        </Modal>
+
+        {/* View Modal */}
+        <Modal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          title="Masraf Detayları"
+        >
+          {viewingExpense && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Masraf Açıklaması</label>
+                  <p className="text-lg font-semibold text-foreground">{viewingExpense.label}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Tutar</label>
+                  <p className="text-2xl font-bold text-primary">
+                    {formatCurrency(parseFloat(viewingExpense.amount.toString()))}
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Tarih</label>
+                  <p className="text-foreground">{formatDate(viewingExpense.date)}</p>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <button
+                  onClick={() => setIsViewModalOpen(false)}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors"
+                  data-testid="button-close-view-expense"
+                >
+                  Kapat
+                </button>
+              </div>
+            </div>
+          )}
         </Modal>
       </div>
     </section>

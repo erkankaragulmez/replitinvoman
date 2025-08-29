@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Modal } from "./Modal";
-import { Plus, Edit2, Trash2, Users, Search, Phone, Mail } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Search, Phone, Mail, Eye } from "lucide-react";
 import type { Customer } from "@shared/schema";
 
 interface CustomersProps {
@@ -12,7 +12,9 @@ interface CustomersProps {
 
 export function Customers({ user }: CustomersProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
     name: "",
@@ -132,6 +134,11 @@ export function Customers({ user }: CustomersProps) {
     setIsModalOpen(true);
   };
 
+  const openViewModal = (customer: Customer) => {
+    setViewingCustomer(customer);
+    setIsViewModalOpen(true);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
@@ -245,6 +252,14 @@ export function Customers({ user }: CustomersProps) {
                   </div>
                   <div className="flex space-x-2 self-start sm:self-center">
                     <button
+                      onClick={() => openViewModal(customer)}
+                      className="p-2 text-muted-foreground hover:text-blue-600 hover:bg-accent rounded-md transition-colors touch-target"
+                      title="Görüntüle"
+                      data-testid={`button-view-customer-${customer.id}`}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    <button
                       onClick={() => openModal(customer)}
                       className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors touch-target"
                       title="Düzenle"
@@ -354,6 +369,61 @@ export function Customers({ user }: CustomersProps) {
               </button>
             </div>
           </form>
+        </Modal>
+
+        {/* View Modal */}
+        <Modal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          title="Müşteri Detayları"
+        >
+          {viewingCustomer && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Müşteri İsmi</label>
+                  <p className="text-lg font-semibold text-foreground">{viewingCustomer.name}</p>
+                </div>
+                
+                {viewingCustomer.email && (
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Email</label>
+                    <p className="text-foreground flex items-center">
+                      <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                      {viewingCustomer.email}
+                    </p>
+                  </div>
+                )}
+                
+                {viewingCustomer.phone && (
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Telefon</label>
+                    <p className="text-foreground flex items-center">
+                      <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                      {viewingCustomer.phone}
+                    </p>
+                  </div>
+                )}
+                
+                {viewingCustomer.address && (
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Adres</label>
+                    <p className="text-foreground whitespace-pre-wrap">{viewingCustomer.address}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <button
+                  onClick={() => setIsViewModalOpen(false)}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors"
+                  data-testid="button-close-view-customer"
+                >
+                  Kapat
+                </button>
+              </div>
+            </div>
+          )}
         </Modal>
       </div>
     </section>

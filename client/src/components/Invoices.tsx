@@ -15,8 +15,10 @@ interface InvoicesProps {
 export function Invoices({ user }: InvoicesProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [viewingInvoice, setViewingInvoice] = useState<Invoice | null>(null);
   const [formData, setFormData] = useState({
     customerId: "",
     description: "",
@@ -231,6 +233,11 @@ export function Invoices({ user }: InvoicesProps) {
     setIsPaymentModalOpen(true);
   };
 
+  const openViewModal = (invoice: Invoice) => {
+    setViewingInvoice(invoice);
+    setIsViewModalOpen(true);
+  };
+
   if (isLoading) {
     return (
       <section className="p-4 sm:p-6 lg:p-8">
@@ -325,6 +332,14 @@ export function Invoices({ user }: InvoicesProps) {
                       </div>
                     )}
                     <div className="flex justify-end space-x-2 mt-4">
+                      <button
+                        onClick={() => openViewModal(invoice)}
+                        className="p-2 text-muted-foreground hover:text-blue-600 hover:bg-accent rounded-md transition-colors touch-target"
+                        title="Görüntüle"
+                        data-testid={`button-view-invoice-${invoice.id}`}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
                       {parseFloat(invoice.amount) > parseFloat(invoice.paidAmount || "0") && (
                         <button
                           onClick={() => openPaymentModal(invoice)}
@@ -421,6 +436,14 @@ export function Invoices({ user }: InvoicesProps) {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex justify-end space-x-2">
+                              <button
+                                onClick={() => openViewModal(invoice)}
+                                className="text-muted-foreground hover:text-blue-600 transition-colors"
+                                title="Görüntüle"
+                                data-testid={`button-view-invoice-${invoice.id}`}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
                               {parseFloat(invoice.amount) > parseFloat(invoice.paidAmount || "0") && (
                                 <button
                                   onClick={() => openPaymentModal(invoice)}
@@ -584,6 +607,81 @@ export function Invoices({ user }: InvoicesProps) {
           title={selectedInvoice ? `Fatura #${selectedInvoice.id.slice(-8)} - Ödeme Ekle` : "Ödeme Ekle"}
         >
           {selectedInvoice && <Payments invoice={selectedInvoice} />}
+        </Modal>
+
+        {/* View Modal */}
+        <Modal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          title="Fatura Detayları"
+        >
+          {viewingInvoice && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Fatura No</label>
+                  <p className="text-lg font-semibold text-foreground">{viewingInvoice.invoiceNumber}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Müşteri</label>
+                  <p className="text-foreground">
+                    {customers.find((c: Customer) => c.id === viewingInvoice.customerId)?.name || 'Müşteri bulunamadı'}
+                  </p>
+                </div>
+                
+                {viewingInvoice.description && (
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Açıklama</label>
+                    <p className="text-foreground">{viewingInvoice.description}</p>
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Fatura Tutarı</label>
+                  <p className="text-2xl font-bold text-primary">
+                    {formatCurrency(parseFloat(viewingInvoice.amount.toString()))}
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Ödenen Tutar</label>
+                  <p className="text-lg font-semibold text-green-600">
+                    {formatCurrency(parseFloat(viewingInvoice.paidAmount || "0"))}
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Kalan Tutar</label>
+                  <p className="text-lg font-semibold text-orange-600">
+                    {formatCurrency(parseFloat(viewingInvoice.amount.toString()) - parseFloat(viewingInvoice.paidAmount || "0"))}
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Tarih</label>
+                  <p className="text-foreground">{formatDate(viewingInvoice.date)}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Durum</label>
+                  <div className="flex items-center">
+                    {getStatusBadge(viewingInvoice)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <button
+                  onClick={() => setIsViewModalOpen(false)}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors"
+                  data-testid="button-close-view-invoice"
+                >
+                  Kapat
+                </button>
+              </div>
+            </div>
+          )}
         </Modal>
       </div>
     </section>
