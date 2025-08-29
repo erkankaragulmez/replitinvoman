@@ -252,7 +252,7 @@ export function Invoices({ user }: InvoicesProps) {
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h4 className="font-semibold text-foreground" data-testid={`invoice-id-${invoice.id}`}>
-                          #{invoice.id.slice(-8)}
+                          {invoice.invoiceNumber || `#${invoice.id.slice(-8)}`}
                         </h4>
                         <p className="text-muted-foreground text-sm">
                           {getCustomerName(invoice.customerId)}
@@ -364,7 +364,7 @@ export function Invoices({ user }: InvoicesProps) {
                       {invoices.map((invoice: Invoice) => (
                         <tr key={invoice.id} className="hover:bg-muted/30">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
-                            #{invoice.id.slice(-8)}
+                            {invoice.invoiceNumber || `#${invoice.id.slice(-8)}`}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             {getCustomerName(invoice.customerId)}

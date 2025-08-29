@@ -106,9 +106,14 @@ export class MemStorage implements IStorage {
     const paidStatus = insertInvoice.paid || false;
     const paidAmount = paidStatus ? insertInvoice.amount : "0";
     
+    // Generate invoice number in FATNNNNNN format
+    const invoiceCount = Array.from(this.invoices.values()).filter(inv => inv.userId === insertInvoice.userId).length;
+    const invoiceNumber = `FAT${String(invoiceCount + 1).padStart(6, '0')}`;
+    
     const invoice: Invoice = { 
       ...insertInvoice, 
       id,
+      invoiceNumber,
       description: insertInvoice.description || null,
       paid: paidStatus,
       paidAmount,

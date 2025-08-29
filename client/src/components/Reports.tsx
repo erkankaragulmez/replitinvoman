@@ -272,7 +272,7 @@ export function Reports({ user }: ReportsProps) {
                           return (
                             <div key={invoice.id} className="flex justify-between items-center py-2 px-3 bg-muted/30 rounded">
                               <div>
-                                <p className="font-medium">#{invoice.id.slice(-8)}</p>
+                                <p className="font-medium">{invoice.invoiceNumber || `#${invoice.id.slice(-8)}`}</p>
                                 <p className="text-sm text-muted-foreground">
                                   {getCustomerName(invoice.customerId)} • {formatDate(invoice.date)} • {daysDiff} gün
                                 </p>

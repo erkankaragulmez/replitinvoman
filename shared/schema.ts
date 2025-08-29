@@ -21,6 +21,7 @@ export const customers = pgTable("customers", {
 
 export const invoices = pgTable("invoices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  invoiceNumber: text("invoice_number").notNull().unique(),
   userId: varchar("user_id").notNull().references(() => users.id),
   customerId: varchar("customer_id").notNull().references(() => customers.id),
   description: text("description"),
@@ -51,7 +52,7 @@ export const payments = pgTable("payments", {
 
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true });
-export const insertInvoiceSchema = createInsertSchema(invoices).omit({ id: true, createdAt: true, paidAmount: true });
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({ id: true, createdAt: true, paidAmount: true, invoiceNumber: true });
 export const insertExpenseSchema = createInsertSchema(expenses).omit({ id: true, createdAt: true });
 export const insertPaymentSchema = createInsertSchema(payments).omit({ id: true, createdAt: true });
 
