@@ -73,33 +73,27 @@ export function Dashboard({ user }: DashboardProps) {
     const yearlyInvoices = filterByYear(invoices, year);
     const yearlyExpenses = filterByYear(expenses, year);
 
-    // Calculate totals (using paid amounts for actual revenue)
-    const monthlyRevenue = monthlyInvoices.reduce((sum, inv) => sum + parseFloat(inv.paidAmount || "0"), 0);
+    // Calculate totals - Gelir: girilen fatura tutarları, Gelen Ödemeler: yapılan ödemeler
+    const monthlyInvoiceTotal = monthlyInvoices.reduce((sum, inv) => sum + parseFloat(inv.amount.toString()), 0);
+    const monthlyPaymentsReceived = monthlyInvoices.reduce((sum, inv) => sum + parseFloat(inv.paidAmount || "0"), 0);
     const monthlyExpenseTotal = monthlyExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount.toString()), 0);
-    const yearlyRevenue = yearlyInvoices.reduce((sum, inv) => sum + parseFloat(inv.paidAmount || "0"), 0);
+    
+    const yearlyInvoiceTotal = yearlyInvoices.reduce((sum, inv) => sum + parseFloat(inv.amount.toString()), 0);
+    const yearlyPaymentsReceived = yearlyInvoices.reduce((sum, inv) => sum + parseFloat(inv.paidAmount || "0"), 0);
     const yearlyExpenseTotal = yearlyExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount.toString()), 0);
 
-    // Invoice payment status
-    const fullyPaidInvoices = monthlyInvoices.filter(inv => inv.paid);
-    const partiallyPaidInvoices = monthlyInvoices.filter(inv => !inv.paid && parseFloat(inv.paidAmount || "0") > 0);
-    const unpaidInvoices = monthlyInvoices.filter(inv => parseFloat(inv.paidAmount || "0") === 0);
-    const pendingAmount = monthlyInvoices.reduce((sum, inv) => {
-      const total = parseFloat(inv.amount.toString());
-      const paid = parseFloat(inv.paidAmount || "0");
-      return sum + (total - paid);
-    }, 0);
+    // Bekleyen ödemeler: Ödenmemiş fatura tutarları
+    const unpaidInvoicesAll = invoices.filter(inv => parseFloat(inv.paidAmount || "0") === 0);
+    const pendingAmount = unpaidInvoicesAll.reduce((sum, inv) => sum + parseFloat(inv.amount.toString()), 0);
 
     return {
-      monthlyRevenue,
+      monthlyInvoiceTotal,
+      monthlyPaymentsReceived,
       monthlyExpenseTotal,
-      yearlyRevenue,
+      yearlyInvoiceTotal,
+      yearlyPaymentsReceived,
       yearlyExpenseTotal,
-      totalInvoices: monthlyInvoices.length,
-      paidInvoices: fullyPaidInvoices.length,
-      partiallyPaidInvoices: partiallyPaidInvoices.length,
-      unpaidInvoices: unpaidInvoices.length,
       pendingAmount,
-      totalCustomers: customers.length,
     };
   }, [invoices, expenses, customers, month, year]);
 
@@ -113,12 +107,12 @@ export function Dashboard({ user }: DashboardProps) {
   };
 
   const calculateMonthlyProfitLoss = () => {
-    const result = stats.monthlyRevenue - stats.monthlyExpenseTotal;
+    const result = stats.monthlyPaymentsReceived - stats.monthlyExpenseTotal;
     setProfitLossMonthly(result);
   };
 
   const calculateYearlyProfitLoss = () => {
-    const result = stats.yearlyRevenue - stats.yearlyExpenseTotal;
+    const result = stats.yearlyPaymentsReceived - stats.yearlyExpenseTotal;
     setProfitLossYearly(result);
   };
 
@@ -141,34 +135,27 @@ export function Dashboard({ user }: DashboardProps) {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
         <DataCard
           title={`Gelir (${month}/${year})`}
-          value={formatCurrency(stats.monthlyRevenue)}
+          value={formatCurrency(stats.monthlyInvoiceTotal)}
           icon={DollarSign}
-          subtitle={`${stats.totalInvoices} fatura`}
-          trend={{ value: "+12.5%", isPositive: true }}
+          subtitle="Girilen fatura tutarları"
         />
 
         <DataCard
-          title={`Faturalar (${month}/${year})`}
-          value={stats.totalInvoices.toString()}
-          icon={FileText}
-          subtitle={`Ödenmiş: ${stats.paidInvoices} | Ödenmemiş: ${stats.unpaidInvoices}`}
-        />
-
-        <DataCard
-          title="Müşteriler"
-          value={stats.totalCustomers.toString()}
-          icon={Users}
-          subtitle="Toplam müşteri sayısı"
+          title={`Gelen Ödemeler (${month}/${year})`}
+          value={formatCurrency(stats.monthlyPaymentsReceived)}
+          icon={TrendingUp}
+          subtitle="Yapılan ödemeler toplamı"
+          className="border-green-200 bg-green-50"
         />
 
         <DataCard
           title="Bekleyen Ödemeler"
           value={formatCurrency(stats.pendingAmount)}
           icon={Clock}
-          subtitle={`${stats.unpaidInvoices} fatura beklemede`}
+          subtitle="Ödenmemiş fatura tutarları"
           className="border-orange-200 bg-orange-50"
         />
       </div>
@@ -209,7 +196,7 @@ export function Dashboard({ user }: DashboardProps) {
               {formatCurrency(profitLossMonthly)}
             </p>
             <div className="text-sm text-muted-foreground mt-2">
-              Gelir: {formatCurrency(stats.monthlyRevenue)} - Masraf: {formatCurrency(stats.monthlyExpenseTotal)}
+              Gelen Ödemeler: {formatCurrency(stats.monthlyPaymentsReceived)} - Masraf: {formatCurrency(stats.monthlyExpenseTotal)}
             </div>
           </div>
         </div>
@@ -230,7 +217,7 @@ export function Dashboard({ user }: DashboardProps) {
               {formatCurrency(profitLossYearly)}
             </p>
             <div className="text-sm text-muted-foreground mt-2">
-              Yıllık Gelir: {formatCurrency(stats.yearlyRevenue)} - Yıllık Masraf: {formatCurrency(stats.yearlyExpenseTotal)}
+              Yıllık Gelen Ödemeler: {formatCurrency(stats.yearlyPaymentsReceived)} - Yıllık Masraf: {formatCurrency(stats.yearlyExpenseTotal)}
             </div>
           </div>
         </div>

@@ -350,6 +350,9 @@ export function Invoices({ user }: InvoicesProps) {
                           Tutar
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
+                          Kalan Bakiye
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                           Durum
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-foreground uppercase tracking-wider">
@@ -374,6 +377,9 @@ export function Invoices({ user }: InvoicesProps) {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-primary">
                             {formatCurrency(parseFloat(invoice.amount.toString()))}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-orange-600">
+                            {formatCurrency(parseFloat(invoice.amount.toString()) - parseFloat(invoice.paidAmount || "0"))}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {getStatusBadge(invoice)}
