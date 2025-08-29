@@ -82,9 +82,12 @@ export function Dashboard({ user }: DashboardProps) {
     const yearlyPaymentsReceived = yearlyInvoices.reduce((sum, inv) => sum + parseFloat(inv.paidAmount || "0"), 0);
     const yearlyExpenseTotal = yearlyExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount.toString()), 0);
 
-    // Bekleyen ödemeler: Ödenmemiş fatura tutarları
-    const unpaidInvoicesAll = invoices.filter(inv => parseFloat(inv.paidAmount || "0") === 0);
-    const pendingAmount = unpaidInvoicesAll.reduce((sum, inv) => sum + parseFloat(inv.amount.toString()), 0);
+    // Bekleyen ödemeler: Ödenmemiş fatura tutarları (kalan bakiyeler)
+    const pendingAmount = invoices.reduce((sum, inv) => {
+      const total = parseFloat(inv.amount.toString());
+      const paid = parseFloat(inv.paidAmount || "0");
+      return sum + (total - paid);
+    }, 0);
 
     return {
       monthlyInvoiceTotal,
@@ -107,12 +110,12 @@ export function Dashboard({ user }: DashboardProps) {
   };
 
   const calculateMonthlyProfitLoss = () => {
-    const result = stats.monthlyPaymentsReceived - stats.monthlyExpenseTotal;
+    const result = stats.monthlyInvoiceTotal - stats.monthlyExpenseTotal;
     setProfitLossMonthly(result);
   };
 
   const calculateYearlyProfitLoss = () => {
-    const result = stats.yearlyPaymentsReceived - stats.yearlyExpenseTotal;
+    const result = stats.yearlyInvoiceTotal - stats.yearlyExpenseTotal;
     setProfitLossYearly(result);
   };
 
@@ -168,7 +171,7 @@ export function Dashboard({ user }: DashboardProps) {
           data-testid="calculate-monthly-profit-loss"
         >
           <Calculator className="h-4 w-4 mr-2" />
-          Aylık Profit/Loss Hesapla
+          Aylık Kar/Zarar Hesapla
         </button>
         <button
           onClick={calculateYearlyProfitLoss}
@@ -176,7 +179,7 @@ export function Dashboard({ user }: DashboardProps) {
           data-testid="calculate-yearly-profit-loss"
         >
           <TrendingUp className="h-4 w-4 mr-2" />
-          Yıllık Profit/Loss Hesapla
+          Yıllık Kar/Zarar Hesapla
         </button>
       </div>
 
@@ -188,7 +191,7 @@ export function Dashboard({ user }: DashboardProps) {
           }`}>
             <h3 className="text-lg font-semibold mb-2 flex items-center">
               <Calculator className="h-5 w-5 mr-2" />
-              Aylık Profit/Loss ({month}/{year})
+              Aylık Kar/Zarar ({month}/{year})
             </h3>
             <p className={`text-2xl font-bold ${
               profitLossMonthly >= 0 ? 'text-green-600' : 'text-red-600'
@@ -196,7 +199,7 @@ export function Dashboard({ user }: DashboardProps) {
               {formatCurrency(profitLossMonthly)}
             </p>
             <div className="text-sm text-muted-foreground mt-2">
-              Gelen Ödemeler: {formatCurrency(stats.monthlyPaymentsReceived)} - Masraf: {formatCurrency(stats.monthlyExpenseTotal)}
+              Toplam Gelir: {formatCurrency(stats.monthlyInvoiceTotal)} - Toplam Masraf: {formatCurrency(stats.monthlyExpenseTotal)}
             </div>
           </div>
         </div>
@@ -209,7 +212,7 @@ export function Dashboard({ user }: DashboardProps) {
           }`}>
             <h3 className="text-lg font-semibold mb-2 flex items-center justify-center">
               <TrendingUp className="h-5 w-5 mr-2" />
-              Yıllık Profit/Loss ({year})
+              Yıllık Kar/Zarar ({year})
             </h3>
             <p className={`text-3xl font-bold ${
               profitLossYearly >= 0 ? 'text-green-600' : 'text-red-600'
@@ -217,7 +220,7 @@ export function Dashboard({ user }: DashboardProps) {
               {formatCurrency(profitLossYearly)}
             </p>
             <div className="text-sm text-muted-foreground mt-2">
-              Yıllık Gelen Ödemeler: {formatCurrency(stats.yearlyPaymentsReceived)} - Yıllık Masraf: {formatCurrency(stats.yearlyExpenseTotal)}
+              Yıllık Toplam Gelir: {formatCurrency(stats.yearlyInvoiceTotal)} - Yıllık Toplam Masraf: {formatCurrency(stats.yearlyExpenseTotal)}
             </div>
           </div>
         </div>
