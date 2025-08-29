@@ -5,6 +5,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { Customers } from "@/components/Customers";
 import { Invoices } from "@/components/Invoices";
 import { Expenses } from "@/components/Expenses";
+import { Reports } from "@/components/Reports";
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -52,7 +53,8 @@ export default function Home() {
               { id: "summary", label: "Panel", icon: "📊" },
               { id: "customers", label: "Müşteriler", icon: "👥" },
               { id: "invoices", label: "Faturalar", icon: "📄" },
-              { id: "expenses", label: "Masraflar", icon: "💳" }
+              { id: "expenses", label: "Masraflar", icon: "💳" },
+              { id: "reports", label: "Raporlar", icon: "📈" }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -77,6 +79,7 @@ export default function Home() {
         {activeTab === "customers" && <Customers user={user} />}
         {activeTab === "invoices" && <Invoices user={user} />}
         {activeTab === "expenses" && <Expenses user={user} />}
+        {activeTab === "reports" && <Reports user={user} />}
       </main>
     </div>
   );

@@ -161,6 +161,20 @@ export function Header({ onLogout, activeTab, onTabChange }: HeaderProps) {
               </svg>
               Masraflar
             </button>
+            <button
+              onClick={() => handleTabClick("reports")}
+              className={`w-full text-left px-4 py-3 rounded-md font-medium transition-colors touch-target ${
+                activeTab === "reports" 
+                  ? "bg-primary text-primary-foreground" 
+                  : "text-foreground hover:bg-accent"
+              }`}
+              data-testid="mobile-nav-reports"
+            >
+              <svg className="inline-block h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+              </svg>
+              Raporlar
+            </button>
             <div className="border-t border-border my-2"></div>
             <button 
               className="w-full text-left px-4 py-3 rounded-md text-muted-foreground hover:bg-accent touch-target"
