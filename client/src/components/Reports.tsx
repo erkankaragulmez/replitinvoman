@@ -132,7 +132,7 @@ export function Reports({ user }: ReportsProps) {
           <BarChart3 className="h-8 w-8 mr-3" />
           Raporlar
         </h1>
-        <p className="text-muted-foreground">Masraf ve alacak yaşlandırma raporları</p>
+        <p className="text-muted-foreground">Masraf ve geciken alacaklar raporları</p>
       </div>
 
       {/* Tab Navigation */}
@@ -161,7 +161,7 @@ export function Reports({ user }: ReportsProps) {
               data-testid="tab-aging-report"
             >
               <Clock className="h-4 w-4 inline mr-1" />
-              Alacak Yaşlandırma
+              Geciken Alacaklar
             </button>
           </nav>
         </div>
@@ -237,7 +237,7 @@ export function Reports({ user }: ReportsProps) {
           <div className="bg-card rounded-lg border border-border p-6">
             <h2 className="text-xl font-semibold mb-4 flex items-center">
               <Clock className="h-5 w-5 mr-2" />
-              Alacak Yaşlandırma Raporu
+              Geciken Alacaklar Raporu
             </h2>
             
             {agingReport.every(bucket => bucket.invoices.length === 0) ? (

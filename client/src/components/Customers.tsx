@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +20,27 @@ export function Customers({ user }: CustomersProps) {
     email: "",
     address: "",
   });
+
+  // Load saved form data on component mount
+  useEffect(() => {
+    const savedCustomerData = localStorage.getItem('customerFormData');
+    if (savedCustomerData) {
+      try {
+        const parsedData = JSON.parse(savedCustomerData);
+        setFormData(prev => ({
+          ...prev,
+          ...parsedData
+        }));
+      } catch (error) {
+        console.error('Error loading saved customer data:', error);
+      }
+    }
+  }, []);
+
+  // Save form data to localStorage whenever formData changes
+  const saveFormData = (data: typeof formData) => {
+    localStorage.setItem('customerFormData', JSON.stringify(data));
+  };
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -81,7 +102,18 @@ export function Customers({ user }: CustomersProps) {
   });
 
   const resetForm = () => {
-    setFormData({ name: "", phone: "", email: "", address: "" });
+    const emptyForm = { name: "", phone: "", email: "", address: "" };
+    setFormData(emptyForm);
+    localStorage.removeItem('customerFormData');
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    const updatedData = { ...formData, [field]: value };
+    setFormData(updatedData);
+    if (!editingCustomer) {
+      // Only save to localStorage if not editing (for new customers)
+      saveFormData(updatedData);
+    }
   };
 
   const openModal = (customer?: Customer) => {
@@ -249,7 +281,7 @@ export function Customers({ user }: CustomersProps) {
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => handleInputChange('name', e.target.value)}
                 className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm sm:text-base touch-target"
                 placeholder="Müşteri adı girin"
                 required
@@ -262,7 +294,7 @@ export function Customers({ user }: CustomersProps) {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => handleInputChange('email', e.target.value)}
                 className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm sm:text-base touch-target"
                 placeholder="ornek@email.com"
                 data-testid="input-customer-email"
@@ -274,7 +306,7 @@ export function Customers({ user }: CustomersProps) {
               <input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
                 className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm sm:text-base touch-target"
                 placeholder="+90 555 123 45 67"
                 data-testid="input-customer-phone"
@@ -285,7 +317,7 @@ export function Customers({ user }: CustomersProps) {
               <label className="block text-sm font-medium text-foreground">Adres</label>
               <textarea
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={(e) => handleInputChange('address', e.target.value)}
                 className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm sm:text-base min-h-[88px]"
                 placeholder="Müşteri adresi"
                 rows={3}

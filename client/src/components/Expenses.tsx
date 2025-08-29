@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,27 @@ export function Expenses({ user }: ExpensesProps) {
     amount: "",
     date: new Date().toISOString().slice(0, 10),
   });
+
+  // Load saved form data on component mount
+  useEffect(() => {
+    const savedExpenseData = localStorage.getItem('expenseFormData');
+    if (savedExpenseData) {
+      try {
+        const parsedData = JSON.parse(savedExpenseData);
+        setFormData(prev => ({
+          ...prev,
+          ...parsedData
+        }));
+      } catch (error) {
+        console.error('Error loading saved expense data:', error);
+      }
+    }
+  }, []);
+
+  // Save form data to localStorage
+  const saveFormData = (data: typeof formData) => {
+    localStorage.setItem('expenseFormData', JSON.stringify(data));
+  };
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -87,11 +108,22 @@ export function Expenses({ user }: ExpensesProps) {
   });
 
   const resetForm = () => {
-    setFormData({
+    const emptyForm = {
       label: "",
       amount: "",
       date: new Date().toISOString().slice(0, 10),
-    });
+    };
+    setFormData(emptyForm);
+    localStorage.removeItem('expenseFormData');
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    const updatedData = { ...formData, [field]: value };
+    setFormData(updatedData);
+    if (!editingExpense) {
+      // Only save to localStorage if not editing (for new expenses)
+      saveFormData(updatedData);
+    }
   };
 
   const openModal = (expense?: Expense) => {

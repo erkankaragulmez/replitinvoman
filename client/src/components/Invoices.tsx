@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +24,28 @@ export function Invoices({ user }: InvoicesProps) {
     paid: false,
     date: new Date().toISOString().slice(0, 10),
   });
+
+  // Load saved form data on component mount
+  useEffect(() => {
+    const savedInvoiceData = localStorage.getItem('invoiceFormData');
+    if (savedInvoiceData && customers.length > 0) {
+      try {
+        const parsedData = JSON.parse(savedInvoiceData);
+        setFormData(prev => ({
+          ...prev,
+          customerId: customers.length > 0 ? customers[0].id : "",
+          ...parsedData
+        }));
+      } catch (error) {
+        console.error('Error loading saved invoice data:', error);
+      }
+    }
+  }, [customers]);
+
+  // Save form data to localStorage
+  const saveFormData = (data: typeof formData) => {
+    localStorage.setItem('invoiceFormData', JSON.stringify(data));
+  };
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -101,13 +123,24 @@ export function Invoices({ user }: InvoicesProps) {
   });
 
   const resetForm = () => {
-    setFormData({
+    const emptyForm = {
       customerId: customers.length > 0 ? customers[0].id : "",
       description: "",
       amount: "",
       paid: false,
       date: new Date().toISOString().slice(0, 10),
-    });
+    };
+    setFormData(emptyForm);
+    localStorage.removeItem('invoiceFormData');
+  };
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    const updatedData = { ...formData, [field]: value };
+    setFormData(updatedData);
+    if (!editingInvoice) {
+      // Only save to localStorage if not editing (for new invoices)
+      saveFormData(updatedData);
+    }
   };
 
   const openModal = (invoice?: Invoice) => {
