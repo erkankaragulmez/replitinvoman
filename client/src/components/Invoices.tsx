@@ -25,6 +25,15 @@ export function Invoices({ user }: InvoicesProps) {
     date: new Date().toISOString().slice(0, 10),
   });
 
+  const { data: customers = [], isLoading: customersLoading } = useQuery({
+    queryKey: ["/api/customers", user.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/customers?userId=${user.id}`);
+      if (!res.ok) throw new Error("Müşteriler alınamadı");
+      return res.json();
+    },
+  });
+
   // Load saved form data on component mount
   useEffect(() => {
     const savedInvoiceData = localStorage.getItem('invoiceFormData');
@@ -50,14 +59,7 @@ export function Invoices({ user }: InvoicesProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: customers = [] } = useQuery({
-    queryKey: ["/api/customers", user.id],
-    queryFn: async () => {
-      const res = await fetch(`/api/customers?userId=${user.id}`);
-      if (!res.ok) throw new Error("Müşteriler alınamadı");
-      return res.json();
-    },
-  });
+
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ["/api/invoices", user.id],

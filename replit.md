@@ -16,6 +16,11 @@ InvoiceManager is a full-stack invoice and expense management application built 
 
 Preferred communication style: Simple, everyday language.
 
+## Recent User Requests (29 Ağustos 2025)
+- "Geciken Alacaklar" terminolojisi tercih ediliyor ("Alacak Yaşlandırma" yerine)
+- Form verilerinin localStorage ile hatırlanması isteniyor (müşteri, fatura, masraf formları için)
+- Free text alanlarındaki değerlerin bir sonraki kullanım için saklanması
+
 # System Architecture
 
 ## Frontend Architecture

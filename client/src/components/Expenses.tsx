@@ -326,7 +326,7 @@ export function Expenses({ user }: ExpensesProps) {
               <input
                 type="text"
                 value={formData.label}
-                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                onChange={(e) => handleInputChange('label', e.target.value)}
                 className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm sm:text-base touch-target"
                 placeholder="Masraf açıklaması girin"
                 required
@@ -343,7 +343,7 @@ export function Expenses({ user }: ExpensesProps) {
                 step="0.01"
                 min="0"
                 value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                onChange={(e) => handleInputChange('amount', e.target.value)}
                 className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm sm:text-base touch-target"
                 placeholder="0.00"
                 required
@@ -358,7 +358,7 @@ export function Expenses({ user }: ExpensesProps) {
               <input
                 type="date"
                 value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                onChange={(e) => handleInputChange('date', e.target.value)}
                 className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm sm:text-base touch-target"
                 required
                 data-testid="input-expense-date"
