@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { BarChart3, FileText, Clock, Calendar, TrendingUp } from "lucide-react";
+import { BarChart3, FileText, Clock, Calendar, TrendingUp, Users, PieChart } from "lucide-react";
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import type { Invoice, Expense, Customer } from "@shared/schema";
 
 interface ReportsProps {
@@ -9,7 +10,8 @@ interface ReportsProps {
 }
 
 export function Reports({ user }: ReportsProps) {
-  const [activeTab, setActiveTab] = useState<"expense" | "aging">("expense");
+  const [activeTab, setActiveTab] = useState<"expense" | "aging" | "customers">("expense");
+  const [customerReportPeriod, setCustomerReportPeriod] = useState<"monthly" | "yearly">("monthly");
 
   // Fetch data
   const { data: customers = [] } = useQuery<Customer[]>({
@@ -125,6 +127,56 @@ export function Reports({ user }: ReportsProps) {
     }
   ];
 
+  // Top 5 Customers Report
+  const getCustomerReport = () => {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    const customerStats = customers.reduce((acc: any, customer: Customer) => {
+      const customerInvoices = invoices.filter((invoice: Invoice) => {
+        const invoiceDate = new Date(invoice.date);
+        const invoiceMonth = invoiceDate.getMonth();
+        const invoiceYear = invoiceDate.getFullYear();
+
+        if (customerReportPeriod === "monthly") {
+          return invoice.customerId === customer.id && 
+                 invoiceMonth === currentMonth && 
+                 invoiceYear === currentYear;
+        } else {
+          return invoice.customerId === customer.id && 
+                 invoiceYear === currentYear;
+        }
+      });
+
+      if (customerInvoices.length > 0) {
+        const totalAmount = customerInvoices.reduce((sum: number, invoice: Invoice) => 
+          sum + parseFloat(invoice.amount.toString()), 0);
+        
+        acc[customer.id] = {
+          name: customer.name,
+          invoiceCount: customerInvoices.length,
+          totalAmount: totalAmount
+        };
+      }
+      
+      return acc;
+    }, {});
+
+    const sortedCustomers = Object.values(customerStats)
+      .sort((a: any, b: any) => b.totalAmount - a.totalAmount)
+      .slice(0, 5);
+
+    return sortedCustomers;
+  };
+
+  const customerReport = getCustomerReport();
+  
+  // Pie chart colors
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+
+
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-6">
@@ -132,7 +184,7 @@ export function Reports({ user }: ReportsProps) {
           <BarChart3 className="h-8 w-8 mr-3" />
           Raporlar
         </h1>
-        <p className="text-muted-foreground">Masraf ve geciken alacaklar raporları</p>
+        <p className="text-muted-foreground">Masraf, geciken alacaklar ve müşteri raporları</p>
       </div>
 
       {/* Tab Navigation */}
@@ -162,6 +214,18 @@ export function Reports({ user }: ReportsProps) {
             >
               <Clock className="h-4 w-4 inline mr-1" />
               Geciken Alacaklar
+            </button>
+            <button
+              onClick={() => setActiveTab("customers")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === "customers"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+              }`}
+              data-testid="tab-customers-report"
+            >
+              <Users className="h-4 w-4 inline mr-1" />
+              Top 5 Müşteri
             </button>
           </nav>
         </div>
@@ -301,6 +365,113 @@ export function Reports({ user }: ReportsProps) {
                       {formatCurrency(agingReport.reduce((sum, bucket) => sum + bucket.total, 0))}
                     </p>
                   </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Top 5 Customers Report */}
+      {activeTab === "customers" && (
+        <div className="space-y-6">
+          <div className="bg-card rounded-lg border border-border p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+              <h2 className="text-xl font-semibold mb-2 sm:mb-0 flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                Top 5 Müşteri Raporu
+              </h2>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCustomerReportPeriod("monthly")}
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    customerReportPeriod === "monthly"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                  data-testid="button-monthly-report"
+                >
+                  Aylık
+                </button>
+                <button
+                  onClick={() => setCustomerReportPeriod("yearly")}
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    customerReportPeriod === "yearly"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                  data-testid="button-yearly-report"
+                >
+                  Yıllık
+                </button>
+              </div>
+            </div>
+            
+            {customerReport.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">
+                  {customerReportPeriod === "monthly" ? "Bu ay" : "Bu yıl"} fatura bulunamadı
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Pie Chart */}
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsPieChart>
+                      <Pie
+                        data={customerReport}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="totalAmount"
+                        nameKey="name"
+                      >
+                        {customerReport.map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => [formatCurrency(value), "Toplam Tutar"]}
+                      />
+                      <Legend />
+                    </RechartsPieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Customer List */}
+                <div className="space-y-3">
+                  {customerReport.map((customer: any, index: number) => (
+                    <div 
+                      key={customer.name} 
+                      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div 
+                          className="w-4 h-4 rounded-full" 
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <div>
+                          <p className="font-medium">{customer.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {customer.invoiceCount} fatura
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-primary">
+                          {formatCurrency(customer.totalAmount)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          #{index + 1}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
