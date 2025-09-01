@@ -31,7 +31,7 @@ export function Dashboard({ user, onTabChange }: DashboardProps) {
     queryKey: ["/api/customers", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/customers?userId=${user.id}`);
-      if (!res.ok) throw new Error("Müşteriler alınamadı");
+      if (!res.ok) throw new Error("Müşteriler yüklenemedi");
       return res.json();
     },
   });
@@ -40,7 +40,7 @@ export function Dashboard({ user, onTabChange }: DashboardProps) {
     queryKey: ["/api/invoices", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/invoices?userId=${user.id}`);
-      if (!res.ok) throw new Error("Faturalar alınamadı");
+      if (!res.ok) throw new Error("Faturalar yüklenemedi");
       return res.json();
     },
   });
@@ -49,7 +49,7 @@ export function Dashboard({ user, onTabChange }: DashboardProps) {
     queryKey: ["/api/expenses", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/expenses?userId=${user.id}`);
-      if (!res.ok) throw new Error("Masraflar alınamadı");
+      if (!res.ok) throw new Error("Masraflar yüklenemedi");
       return res.json();
     },
   });
@@ -143,7 +143,7 @@ export function Dashboard({ user, onTabChange }: DashboardProps) {
         <DataCard
           title={`Yapılan İş (${month}/${year})`}
           value={formatCurrency(stats.monthlyInvoiceTotal)}
-          icon={DollarSign}
+          icon={FileText}
           subtitle="Girilen fatura tutarları"
           onClick={() => onTabChange?.("invoices")}
         />
@@ -163,7 +163,10 @@ export function Dashboard({ user, onTabChange }: DashboardProps) {
           icon={Clock}
           subtitle="Piyasadan tüm alacaklar"
           className="border-orange-200 bg-orange-50"
-          onClick={() => onTabChange?.("reports")}
+          onClick={() => {
+            onTabChange?.("reports");
+            // Geciken alacaklar tab'ına geçiş için Reports bileşeninde aktif tab değişimi gerekecek
+          }}
         />
       </div>
 

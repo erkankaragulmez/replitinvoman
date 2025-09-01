@@ -19,7 +19,7 @@ export function Reports({ user }: ReportsProps) {
     queryKey: ["/api/customers", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/customers?userId=${user.id}`);
-      if (!res.ok) throw new Error("Müşteriler alınamadı");
+      if (!res.ok) throw new Error("Müşteriler yüklenemedi");
       return res.json();
     },
   });
@@ -28,7 +28,7 @@ export function Reports({ user }: ReportsProps) {
     queryKey: ["/api/invoices", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/invoices?userId=${user.id}`);
-      if (!res.ok) throw new Error("Faturalar alınamadı");
+      if (!res.ok) throw new Error("Faturalar yüklenemedi");
       return res.json();
     },
   });
@@ -37,7 +37,7 @@ export function Reports({ user }: ReportsProps) {
     queryKey: ["/api/expenses", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/expenses?userId=${user.id}`);
-      if (!res.ok) throw new Error("Masraflar alınamadı");
+      if (!res.ok) throw new Error("Masraflar yüklenemedi");
       return res.json();
     },
   });

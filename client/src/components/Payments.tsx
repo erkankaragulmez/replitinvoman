@@ -26,7 +26,7 @@ export function Payments({ invoice }: PaymentsProps) {
     queryKey: ["/api/payments", invoice.id],
     queryFn: async () => {
       const res = await fetch(`/api/payments/${invoice.id}`);
-      if (!res.ok) throw new Error("Ödemeler alınamadı");
+      if (!res.ok) throw new Error("Ödemeler yüklenemedi");
       return res.json();
     },
   });

@@ -41,7 +41,7 @@ export function Header({ onLogout, activeTab, onTabChange }: HeaderProps) {
                 </svg>
               </div>
               <h1 className="text-lg sm:text-xl font-bold text-foreground">
-                Invoice<span className="text-primary">Manager</span>
+                Fatura<span className="text-primary">Yoneticim</span>
               </h1>
             </div>
           </div>

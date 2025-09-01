@@ -50,7 +50,7 @@ export function Expenses({ user }: ExpensesProps) {
     queryKey: ["/api/expenses", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/expenses?userId=${user.id}`);
-      if (!res.ok) throw new Error("Masraflar alınamadı");
+      if (!res.ok) throw new Error("Masraflar yüklenemedi");
       return res.json();
     },
   });

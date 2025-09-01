@@ -1,6 +1,6 @@
 # Overview
 
-InvoiceManager is a full-stack invoice and expense management application built with a React frontend and Express.js backend. The application allows users to manage customers, create and track invoices, record expenses, and view financial summaries through an intuitive dashboard. It features user authentication, CRUD operations for all entities, and responsive design with Turkish language support.
+FaturaYoneticim is a full-stack invoice and expense management application built with a React frontend and Express.js backend. The application allows users to manage customers, create and track invoices, record expenses, and view financial summaries through an intuitive dashboard. It features user authentication, CRUD operations for all entities, and responsive design with Turkish language support.
 
 ## Recent Updates (29 Ağustos 2025)
 
@@ -21,6 +21,11 @@ InvoiceManager is a full-stack invoice and expense management application built 
 ✓ Yapılan İş ve Gelen Ödemeler fatura sayfasına yönlendiriyor
 ✓ Alacaklar rapor sayfasına yönlendiriyor
 ✓ Yıllık Kar/Zarar raporu sola yaslı olarak gösteriliyor
+✓ Uygulama adı "FaturaYoneticim" olarak değiştirildi
+✓ Tüm hata mesajları Türkçe'ye çevrildi
+✓ Fatura detaylarına ödeme listesi eklendi
+✓ Dashboard'ta Alacaklar kartı Geciken Alacaklar raporuna yönlendiriyor
+✓ Yapılan İş kartındaki dolar işareti kaldırılıp FileText ikonu eklendi
 
 # User Preferences
 

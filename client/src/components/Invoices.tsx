@@ -31,7 +31,7 @@ export function Invoices({ user }: InvoicesProps) {
     queryKey: ["/api/customers", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/customers?userId=${user.id}`);
-      if (!res.ok) throw new Error("Müşteriler alınamadı");
+      if (!res.ok) throw new Error("Müşteriler yüklenemedi");
       return res.json();
     },
   });
@@ -67,7 +67,7 @@ export function Invoices({ user }: InvoicesProps) {
     queryKey: ["/api/invoices", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/invoices?userId=${user.id}`);
-      if (!res.ok) throw new Error("Faturalar alınamadı");
+      if (!res.ok) throw new Error("Faturalar yüklenemedi");
       return res.json();
     },
   });
@@ -668,6 +668,12 @@ export function Invoices({ user }: InvoicesProps) {
                   <div className="flex items-center">
                     {getStatusBadge(viewingInvoice)}
                   </div>
+                </div>
+                
+                {/* Payments Section */}
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">Yapılan Ödemeler</label>
+                  <Payments invoice={viewingInvoice} />
                 </div>
               </div>
 

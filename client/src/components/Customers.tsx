@@ -51,7 +51,7 @@ export function Customers({ user }: CustomersProps) {
     queryKey: ["/api/customers", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/customers?userId=${user.id}`);
-      if (!res.ok) throw new Error("Müşteriler alınamadı");
+      if (!res.ok) throw new Error("Müşteriler yüklenemedi");
       return res.json();
     },
   });
