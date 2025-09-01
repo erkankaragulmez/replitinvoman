@@ -75,7 +75,7 @@ export default function Home() {
       </div>
       
       <main className="flex-1">
-        {activeTab === "summary" && <Dashboard user={user} />}
+        {activeTab === "summary" && <Dashboard user={user} onTabChange={setActiveTab} />}
         {activeTab === "customers" && <Customers user={user} />}
         {activeTab === "invoices" && <Invoices user={user} />}
         {activeTab === "expenses" && <Expenses user={user} />}

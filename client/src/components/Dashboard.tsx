@@ -16,9 +16,10 @@ import type { Invoice, Expense, Customer } from "@shared/schema";
 
 interface DashboardProps {
   user: any;
+  onTabChange?: (tab: string) => void;
 }
 
-export function Dashboard({ user }: DashboardProps) {
+export function Dashboard({ user, onTabChange }: DashboardProps) {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
@@ -144,6 +145,7 @@ export function Dashboard({ user }: DashboardProps) {
           value={formatCurrency(stats.monthlyInvoiceTotal)}
           icon={DollarSign}
           subtitle="Girilen fatura tutarları"
+          onClick={() => onTabChange?.("invoices")}
         />
 
         <DataCard
@@ -152,14 +154,16 @@ export function Dashboard({ user }: DashboardProps) {
           icon={TrendingUp}
           subtitle="Yapılan ödemeler toplamı"
           className="border-green-200 bg-green-50"
+          onClick={() => onTabChange?.("invoices")}
         />
 
         <DataCard
           title="Alacaklar"
           value={formatCurrency(stats.pendingAmount)}
           icon={Clock}
-          subtitle="Ödenmemiş fatura tutarları"
+          subtitle="Piyasadan tüm alacaklar"
           className="border-orange-200 bg-orange-50"
+          onClick={() => onTabChange?.("reports")}
         />
       </div>
 
@@ -207,10 +211,10 @@ export function Dashboard({ user }: DashboardProps) {
 
       {profitLossYearly !== null && (
         <div className="mb-6">
-          <div className={`bg-card rounded-lg border border-border p-4 sm:p-6 text-center ${
+          <div className={`bg-card rounded-lg border border-border p-4 sm:p-6 text-left ${
             profitLossYearly >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
           }`}>
-            <h3 className="text-lg font-semibold mb-2 flex items-center justify-center">
+            <h3 className="text-lg font-semibold mb-2 flex items-center">
               <TrendingUp className="h-5 w-5 mr-2" />
               Yıllık Kar/Zarar ({year})
             </h3>
