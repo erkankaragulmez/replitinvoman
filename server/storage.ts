@@ -1,11 +1,18 @@
-import { type User, type Customer, type Invoice, type Expense, type Payment, type InsertUser, type InsertCustomer, type InsertInvoice, type InsertExpense, type InsertPayment } from "@shared/schema";
+import { type User, type Customer, type Invoice, type Expense, type Payment, type PasswordResetRequest, type InsertUser, type InsertCustomer, type InsertInvoice, type InsertExpense, type InsertPayment, type InsertPasswordReset } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
   // User methods
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
+  
+  // Password reset methods
+  createPasswordReset(reset: InsertPasswordReset): Promise<PasswordResetRequest>;
+  getPasswordReset(token: string): Promise<PasswordResetRequest | undefined>;
+  deletePasswordReset(id: string): Promise<boolean>;
   
   // Customer methods
   getCustomers(userId: string): Promise<Customer[]>;
@@ -40,6 +47,7 @@ export class MemStorage implements IStorage {
   private invoices: Map<string, Invoice> = new Map();
   private expenses: Map<string, Expense> = new Map();
   private payments: Map<string, Payment> = new Map();
+  private passwordResets: Map<string, PasswordResetRequest> = new Map();
 
   // User methods
   async getUser(id: string): Promise<User | undefined> {
@@ -50,11 +58,50 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values()).find(user => user.email === email);
   }
 
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.googleId === googleId);
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      googleId: null,
+      resetToken: null,
+      resetTokenExpiry: null
+    };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUser(id: string, updateData: Partial<User>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { ...user, ...updateData };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  // Password reset methods
+  async createPasswordReset(insertReset: InsertPasswordReset): Promise<PasswordResetRequest> {
+    const id = randomUUID();
+    const reset: PasswordResetRequest = { 
+      ...insertReset, 
+      id,
+      createdAt: new Date()
+    };
+    this.passwordResets.set(id, reset);
+    return reset;
+  }
+
+  async getPasswordReset(token: string): Promise<PasswordResetRequest | undefined> {
+    return Array.from(this.passwordResets.values()).find(reset => reset.token === token);
+  }
+
+  async deletePasswordReset(id: string): Promise<boolean> {
+    return this.passwordResets.delete(id);
   }
 
   // Customer methods
