@@ -10,7 +10,7 @@ interface ReportsProps {
 }
 
 export function Reports({ user }: ReportsProps) {
-  const [activeTab, setActiveTab] = useState<"expense" | "aging" | "customers">("expense");
+  const [activeTab, setActiveTab] = useState<"expense" | "aging" | "customers">("aging");
   const [customerReportPeriod, setCustomerReportPeriod] = useState<"monthly" | "yearly">("monthly");
   const [expenseReportPeriod, setExpenseReportPeriod] = useState<"monthly" | "yearly">("monthly");
 
@@ -208,18 +208,6 @@ export function Reports({ user }: ReportsProps) {
         <div className="border-b border-border">
           <nav className="-mb-px flex space-x-8">
             <button
-              onClick={() => setActiveTab("expense")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === "expense"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-              }`}
-              data-testid="tab-expense-report"
-            >
-              <TrendingUp className="h-4 w-4 inline mr-1" />
-              Masraf Raporu
-            </button>
-            <button
               onClick={() => setActiveTab("aging")}
               className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === "aging"
@@ -230,6 +218,18 @@ export function Reports({ user }: ReportsProps) {
             >
               <Clock className="h-4 w-4 inline mr-1" />
               Geciken Alacaklar
+            </button>
+            <button
+              onClick={() => setActiveTab("expense")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === "expense"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+              }`}
+              data-testid="tab-expense-report"
+            >
+              <TrendingUp className="h-4 w-4 inline mr-1" />
+              Masraf Raporu
             </button>
             <button
               onClick={() => setActiveTab("customers")}
