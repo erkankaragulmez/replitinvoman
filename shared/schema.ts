@@ -8,18 +8,6 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
-  googleId: text("google_id"),
-  resetToken: text("reset_token"),
-  resetTokenExpiry: timestamp("reset_token_expiry"),
-});
-
-export const passwordResetRequests = pgTable("password_reset_requests", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: text("email").notNull(),
-  token: text("token").notNull(),
-  newPassword: text("new_password").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  expiresAt: timestamp("expires_at").notNull(),
 });
 
 export const customers = pgTable("customers", {
@@ -62,23 +50,20 @@ export const payments = pgTable("payments", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(users).omit({ id: true, googleId: true, resetToken: true, resetTokenExpiry: true });
+export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true });
 export const insertInvoiceSchema = createInsertSchema(invoices).omit({ id: true, createdAt: true, paidAmount: true, invoiceNumber: true });
 export const insertExpenseSchema = createInsertSchema(expenses).omit({ id: true, createdAt: true });
 export const insertPaymentSchema = createInsertSchema(payments).omit({ id: true, createdAt: true });
-export const insertPasswordResetSchema = createInsertSchema(passwordResetRequests).omit({ id: true, createdAt: true });
 
 export type User = typeof users.$inferSelect;
 export type Customer = typeof customers.$inferSelect;
 export type Invoice = typeof invoices.$inferSelect;
 export type Expense = typeof expenses.$inferSelect;
 export type Payment = typeof payments.$inferSelect;
-export type PasswordResetRequest = typeof passwordResetRequests.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type InsertExpense = z.infer<typeof insertExpenseSchema>;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
-export type InsertPasswordReset = z.infer<typeof insertPasswordResetSchema>;

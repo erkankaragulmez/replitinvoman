@@ -1,8 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertCustomerSchema, insertInvoiceSchema, insertExpenseSchema, insertPaymentSchema, insertPasswordResetSchema } from "@shared/schema";
-import { emailService } from "./emailService";
+import { insertUserSchema, insertCustomerSchema, insertInvoiceSchema, insertExpenseSchema, insertPaymentSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
@@ -35,84 +34,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ user: { id: user.id, name: user.name, email: user.email } });
     } catch (error) {
       res.status(400).json({ error: "Giriş başarısız oldu." });
-    }
-  });
-
-  // Password Reset Routes
-  app.post("/api/auth/forgot-password", async (req, res) => {
-    try {
-      const { email } = req.body;
-      
-      if (!email) {
-        return res.status(400).json({ error: "Email adresi gerekli." });
-      }
-
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(404).json({ error: "Bu email adresi ile kayıtlı kullanıcı bulunamadı." });
-      }
-
-      // Generate new password
-      const newPassword = emailService.generateRandomPassword(8);
-      const token = emailService.generateRandomPassword(32);
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-      // Create password reset request
-      await storage.createPasswordReset({
-        email: user.email,
-        token,
-        newPassword,
-        expiresAt
-      });
-
-      // Send email
-      const emailSent = await emailService.sendPasswordResetEmail(user.email, newPassword);
-      
-      if (!emailSent) {
-        return res.status(500).json({ error: "Email gönderilirken hata oluştu. Email ayarlarını kontrol edin." });
-      }
-
-      res.json({ message: "Yeni şifreniz email adresinize gönderildi." });
-    } catch (error) {
-      console.error('Password reset error:', error);
-      res.status(500).json({ error: "Şifre yenileme işlemi başarısız oldu." });
-    }
-  });
-
-  // Google OAuth routes (placeholder - requires Google OAuth setup)
-  app.post("/api/auth/google", async (req, res) => {
-    try {
-      const { googleId, email, name } = req.body;
-      
-      if (!googleId || !email || !name) {
-        return res.status(400).json({ error: "Google bilgileri eksik." });
-      }
-
-      // Check if user exists with Google ID
-      let user = await storage.getUserByGoogleId(googleId);
-      
-      if (!user) {
-        // Check if user exists with email
-        user = await storage.getUserByEmail(email);
-        
-        if (user) {
-          // Link Google account to existing user
-          await storage.updateUser(user.id, { googleId });
-        } else {
-          // Create new user with Google account
-          user = await storage.createUser({
-            name,
-            email,
-            password: emailService.generateRandomPassword(16) // Random password for Google users
-          });
-          await storage.updateUser(user.id, { googleId });
-        }
-      }
-
-      res.json({ user: { id: user.id, name: user.name, email: user.email } });
-    } catch (error) {
-      console.error('Google auth error:', error);
-      res.status(500).json({ error: "Google ile giriş başarısız oldu." });
     }
   });
 
