@@ -14,6 +14,8 @@ InvoiceManager is a full-stack invoice and expense management application built 
 ✓ Tüm listelere "Görüntüle" butonu eklendi (müşteri, fatura, masraf)
 ✓ Detay görüntüleme modalları eklendi
 ✓ View ikonu (Eye) ile görsel açıklama eklendi
+✓ Masraf raporuna aylık/yıllık periyot seçici eklendi
+✓ Dashboard'ta "Gelir" yerine "Yapılan İş" terminolojisi kullanılıyor
 
 # User Preferences
 
@@ -23,6 +25,8 @@ Preferred communication style: Simple, everyday language.
 - "Geciken Alacaklar" terminolojisi tercih ediliyor ("Alacak Yaşlandırma" yerine)
 - Form verilerinin localStorage ile hatırlanması isteniyor (müşteri, fatura, masraf formları için)
 - Free text alanlarındaki değerlerin bir sonraki kullanım için saklanması
+- "Gelir" yerine "Yapılan İş" terminolojisi tercih ediliyor
+- Masraf raporlarına aylık/yıllık periyot seçenekleri eklenmesi isteniyor
 
 # System Architecture
 

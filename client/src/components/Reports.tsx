@@ -12,6 +12,7 @@ interface ReportsProps {
 export function Reports({ user }: ReportsProps) {
   const [activeTab, setActiveTab] = useState<"expense" | "aging" | "customers">("expense");
   const [customerReportPeriod, setCustomerReportPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [expenseReportPeriod, setExpenseReportPeriod] = useState<"monthly" | "yearly">("monthly");
 
   // Fetch data
   const { data: customers = [] } = useQuery<Customer[]>({
@@ -46,8 +47,23 @@ export function Reports({ user }: ReportsProps) {
     return customer ? customer.name : "Bilinmeyen Müşteri";
   };
 
+  // Filter expenses by period for expense report
+  const getFilteredExpenses = (period: "monthly" | "yearly") => {
+    const now = new Date();
+    return expenses.filter(expense => {
+      const expenseDate = new Date(expense.date);
+      if (period === "monthly") {
+        return expenseDate.getMonth() === now.getMonth() && 
+               expenseDate.getFullYear() === now.getFullYear();
+      } else {
+        return expenseDate.getFullYear() === now.getFullYear();
+      }
+    });
+  };
+
   // Expense Report by Category
-  const expensesByCategory = expenses.reduce((acc, expense) => {
+  const filteredExpenses = getFilteredExpenses(expenseReportPeriod);
+  const expensesByCategory = filteredExpenses.reduce((acc, expense) => {
     const category = expense.label || "Kategorisiz";
     if (!acc[category]) {
       acc[category] = [];
@@ -235,15 +251,48 @@ export function Reports({ user }: ReportsProps) {
       {activeTab === "expense" && (
         <div className="space-y-6">
           <div className="bg-card rounded-lg border border-border p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <TrendingUp className="h-5 w-5 mr-2" />
-              Kategoriye Göre Masraf Raporu
-            </h2>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+              <h2 className="text-xl font-semibold flex items-center">
+                <TrendingUp className="h-5 w-5 mr-2" />
+                Kategoriye Göre Masraf Raporu
+              </h2>
+              <div className="flex bg-muted rounded-lg p-1">
+                <button
+                  onClick={() => setExpenseReportPeriod("monthly")}
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    expenseReportPeriod === "monthly" 
+                      ? "bg-primary text-primary-foreground" 
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Aylık
+                </button>
+                <button
+                  onClick={() => setExpenseReportPeriod("yearly")}
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    expenseReportPeriod === "yearly" 
+                      ? "bg-primary text-primary-foreground" 
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Yıllık
+                </button>
+              </div>
+            </div>
             
+            <div className="mb-4 text-sm text-muted-foreground">
+              {expenseReportPeriod === "monthly" 
+                ? `Bu ay (${new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}) masraf raporu`
+                : `Bu yıl (${new Date().getFullYear()}) masraf raporu`
+              }
+            </div>
+
             {expenseReport.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">Henüz masraf kaydı yok</p>
+                <p className="text-muted-foreground">
+                  {expenseReportPeriod === "monthly" ? "Bu ay" : "Bu yıl"} henüz masraf kaydı yok
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -285,7 +334,7 @@ export function Reports({ user }: ReportsProps) {
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">Toplam Masraf</h3>
                     <p className="text-2xl font-bold text-primary">
-                      {formatCurrency(expenses.reduce((sum, exp) => sum + parseFloat(exp.amount.toString()), 0))}
+                      {formatCurrency(filteredExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount.toString()), 0))}
                     </p>
                   </div>
                 </div>

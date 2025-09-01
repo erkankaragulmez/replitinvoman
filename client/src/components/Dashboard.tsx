@@ -140,7 +140,7 @@ export function Dashboard({ user }: DashboardProps) {
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
         <DataCard
-          title={`Gelir (${month}/${year})`}
+          title={`Yapılan İş (${month}/${year})`}
           value={formatCurrency(stats.monthlyInvoiceTotal)}
           icon={DollarSign}
           subtitle="Girilen fatura tutarları"
@@ -199,7 +199,7 @@ export function Dashboard({ user }: DashboardProps) {
               {formatCurrency(profitLossMonthly)}
             </p>
             <div className="text-sm text-muted-foreground mt-2">
-              Toplam Gelir: {formatCurrency(stats.monthlyInvoiceTotal)} - Toplam Masraf: {formatCurrency(stats.monthlyExpenseTotal)}
+              Toplam Yapılan İş: {formatCurrency(stats.monthlyInvoiceTotal)} - Toplam Masraf: {formatCurrency(stats.monthlyExpenseTotal)}
             </div>
           </div>
         </div>
@@ -220,7 +220,7 @@ export function Dashboard({ user }: DashboardProps) {
               {formatCurrency(profitLossYearly)}
             </p>
             <div className="text-sm text-muted-foreground mt-2">
-              Yıllık Toplam Gelir: {formatCurrency(stats.yearlyInvoiceTotal)} - Yıllık Toplam Masraf: {formatCurrency(stats.yearlyExpenseTotal)}
+              Yıllık Toplam Yapılan İş: {formatCurrency(stats.yearlyInvoiceTotal)} - Yıllık Toplam Masraf: {formatCurrency(stats.yearlyExpenseTotal)}
             </div>
           </div>
         </div>
