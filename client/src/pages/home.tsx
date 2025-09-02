@@ -28,6 +28,29 @@ export default function Home() {
     localStorage.setItem("loggedUser", JSON.stringify(userData));
   };
 
+  // Debug: Refresh user data from API
+  const refreshUserData = async () => {
+    try {
+      const storedUser = localStorage.getItem("loggedUser");
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        // Make a fresh login call to get updated user data
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: parsedUser.email, password: "123456" })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+          localStorage.setItem("loggedUser", JSON.stringify(data.user));
+        }
+      }
+    } catch (error) {
+      console.error("User data refresh failed:", error);
+    }
+  };
+
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("loggedUser");
@@ -45,6 +68,17 @@ export default function Home() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
+      
+      {/* Debug button - temporary */}
+      <div className="bg-yellow-100 p-2 text-center">
+        <span className="text-sm mr-2">Role: {user?.role || 'undefined'}</span>
+        <button 
+          onClick={refreshUserData}
+          className="bg-blue-500 text-white px-3 py-1 rounded text-sm"
+        >
+          🔄 Kullanıcı Verisini Yenile
+        </button>
+      </div>
       
       {/* Desktop Navigation Tabs */}
       <div className="hidden sm:block bg-card border-b border-border sticky top-16 z-40">
