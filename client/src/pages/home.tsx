@@ -76,68 +76,92 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      <Header 
-        onLogout={handleLogout} 
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
-      
-      {/* ADMIN PANEL ACCESS - ALWAYS VISIBLE */}
-      <div style={{backgroundColor: '#ef4444', color: 'white', padding: '20px', textAlign: 'center', fontSize: '18px', fontWeight: 'bold'}}>
-        ⚠️ ADMIN PANEL ERIŞIMI ⚠️
+      {/* FIXED ADMIN PANEL ACCESS - ALWAYS VISIBLE */}
+      <div style={{
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        right: '0',
+        backgroundColor: '#dc2626',
+        color: 'white',
+        padding: '20px',
+        textAlign: 'center',
+        fontSize: '20px',
+        fontWeight: 'bold',
+        zIndex: 9999,
+        boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+      }}>
+        🚨 ADMIN PANEL ERİŞİMİ 🚨
         <br/>
         <button 
-          onClick={() => setActiveTab("admin")}
-          style={{backgroundColor: '#22c55e', color: 'white', padding: '15px 30px', margin: '10px', borderRadius: '8px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'}}
+          onClick={() => {
+            setActiveTab("admin");
+            window.scrollTo(0, 0);
+          }}
+          style={{
+            backgroundColor: '#16a34a',
+            color: 'white',
+            padding: '15px 30px',
+            margin: '10px',
+            borderRadius: '8px',
+            border: 'none',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
         >
           🎯 ADMIN PANELI AÇ
         </button>
-        <button 
-          onClick={() => setActiveTab("admin")}
-          style={{backgroundColor: '#3b82f6', color: 'white', padding: '15px 30px', margin: '10px', borderRadius: '8px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'}}
-        >
-          📱 ADMIN SAYFASI
-        </button>
       </div>
       
-      {/* Desktop Navigation Tabs */}
-      <div className="hidden sm:block bg-card border-b border-border sticky top-16 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8" aria-label="Tabs">
-            {[
-              { id: "summary", label: "Panel", icon: "📊" },
-              { id: "customers", label: "Müşteriler", icon: "👥" },
-              { id: "invoices", label: "Faturalar", icon: "📄" },
-              { id: "expenses", label: "Masraflar", icon: "💳" },
-              { id: "reports", label: "Raporlar", icon: "📈" },
-              { id: "admin", label: "Yönetim", icon: "⚙️" }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors touch-target ${
-                  activeTab === tab.id
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
-                }`}
-                data-testid={`nav-${tab.id}`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+      {/* Main content with top padding for fixed header */}
+      <div style={{paddingTop: '120px'}}>
+        <Header 
+          onLogout={handleLogout} 
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      
+        {/* Desktop Navigation Tabs */}
+        <div className="hidden sm:block bg-card border-b border-border sticky top-16 z-40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav className="flex space-x-8" aria-label="Tabs">
+              {[
+                { id: "summary", label: "Panel", icon: "📊" },
+                { id: "customers", label: "Müşteriler", icon: "👥" },
+                { id: "invoices", label: "Faturalar", icon: "📄" },
+                { id: "expenses", label: "Masraflar", icon: "💳" },
+                { id: "reports", label: "Raporlar", icon: "📈" },
+                { id: "admin", label: "Yönetim", icon: "⚙️" }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors touch-target ${
+                    activeTab === tab.id
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
+                  }`}
+                  data-testid={`nav-${tab.id}`}
+                >
+                  <span className="mr-2">{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
+        
+        <main className="flex-1">
+          {activeTab === "summary" && <Dashboard user={user} onTabChange={setActiveTab} />}
+          {activeTab === "customers" && <Customers user={user} />}
+          {activeTab === "invoices" && <Invoices user={user} />}
+          {activeTab === "expenses" && <Expenses user={user} />}
+          {activeTab === "reports" && <Reports user={user} />}
+          {activeTab === "admin" && <AdminPanel user={user} />}
+        </main>
       </div>
-      
-      <main className="flex-1">
-        {activeTab === "summary" && <Dashboard user={user} onTabChange={setActiveTab} />}
-        {activeTab === "customers" && <Customers user={user} />}
-        {activeTab === "invoices" && <Invoices user={user} />}
-        {activeTab === "expenses" && <Expenses user={user} />}
-        {activeTab === "reports" && <Reports user={user} />}
-        {activeTab === "admin" && <AdminPanel user={user} />}
-      </main>
     </div>
   );
 }
