@@ -16,7 +16,13 @@ export default function Home() {
     const storedUser = localStorage.getItem("loggedUser");
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const userData = JSON.parse(storedUser);
+        // Force admin role if email is erkan@mail.com
+        if (userData.email === "erkan@mail.com") {
+          userData.role = "admin";
+          localStorage.setItem("loggedUser", JSON.stringify(userData));
+        }
+        setUser(userData);
       } catch (error) {
         localStorage.removeItem("loggedUser");
       }
