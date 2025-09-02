@@ -86,7 +86,10 @@ export function Header({ onLogout, activeTab, onTabChange, user }: HeaderProps) 
               <button 
                 className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-accent transition-colors touch-target flex items-center space-x-1" 
                 title="Profil"
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                onClick={() => {
+                  console.log('Profile button clicked, current state:', isProfileMenuOpen);
+                  setIsProfileMenuOpen(!isProfileMenuOpen);
+                }}
                 data-testid="profile-button"
               >
                 <User className="h-5 w-5" />
