@@ -7,12 +7,14 @@ import { insertUserSchema, insertCustomerSchema, insertInvoiceSchema, insertExpe
 // Admin middleware
 const requireAdmin = async (req: any, res: any, next: any) => {
   try {
-    const { adminUserId } = req.headers;
-    if (!adminUserId) {
+    const { adminuserid } = req.headers;  // Headers are lowercase
+    
+    if (!adminuserid) {
       return res.status(401).json({ error: "Admin yetki gerekli" });
     }
     
-    const adminUser = await storage.getUser(adminUserId as string);
+    const adminUser = await storage.getUser(adminuserid as string);
+    
     if (!adminUser || adminUser.role !== "admin") {
       return res.status(403).json({ error: "Admin yetkisi gerekli" });
     }
