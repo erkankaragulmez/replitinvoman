@@ -62,7 +62,8 @@ export function Customers({ user }: CustomersProps) {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      queryClient.refetchQueries({ queryKey: ["/api/customers", user.id] });
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Müşteri eklendi" });
@@ -78,7 +79,8 @@ export function Customers({ user }: CustomersProps) {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      queryClient.refetchQueries({ queryKey: ["/api/customers", user.id] });
       setIsModalOpen(false);
       setEditingCustomer(null);
       resetForm();
@@ -95,7 +97,8 @@ export function Customers({ user }: CustomersProps) {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      queryClient.refetchQueries({ queryKey: ["/api/customers", user.id] });
       toast({ title: "Başarılı", description: "Müşteri silindi" });
     },
     onError: () => {

@@ -82,7 +82,8 @@ export function Invoices({ user }: InvoicesProps) {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/invoices", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+      queryClient.refetchQueries({ queryKey: ["/api/invoices", user.id] });
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Fatura eklendi" });
@@ -101,7 +102,8 @@ export function Invoices({ user }: InvoicesProps) {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/invoices", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+      queryClient.refetchQueries({ queryKey: ["/api/invoices", user.id] });
       setIsModalOpen(false);
       setEditingInvoice(null);
       resetForm();
@@ -118,7 +120,8 @@ export function Invoices({ user }: InvoicesProps) {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/invoices", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+      queryClient.refetchQueries({ queryKey: ["/api/invoices", user.id] });
       toast({ title: "Başarılı", description: "Fatura silindi" });
     },
     onError: () => {

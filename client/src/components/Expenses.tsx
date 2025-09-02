@@ -65,7 +65,8 @@ export function Expenses({ user }: ExpensesProps) {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/expenses", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
+      queryClient.refetchQueries({ queryKey: ["/api/expenses", user.id] });
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Masraf eklendi" });
@@ -84,7 +85,8 @@ export function Expenses({ user }: ExpensesProps) {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/expenses", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
+      queryClient.refetchQueries({ queryKey: ["/api/expenses", user.id] });
       setIsModalOpen(false);
       setEditingExpense(null);
       resetForm();
@@ -101,7 +103,8 @@ export function Expenses({ user }: ExpensesProps) {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/expenses", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
+      queryClient.refetchQueries({ queryKey: ["/api/expenses", user.id] });
       toast({ title: "Başarılı", description: "Masraf silindi" });
     },
     onError: () => {
