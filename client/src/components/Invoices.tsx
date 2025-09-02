@@ -81,12 +81,13 @@ export function Invoices({ user }: InvoicesProps) {
       });
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
-      queryClient.refetchQueries({ queryKey: ["/api/invoices", user.id] });
+    onSuccess: async () => {
+      await queryClient.resetQueries({ queryKey: ["/api/invoices"] });
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Fatura eklendi" });
+      // Force window reload to ensure data shows up
+      window.location.reload();
     },
     onError: () => {
       toast({ variant: "destructive", title: "Hata", description: "Fatura eklenemedi" });

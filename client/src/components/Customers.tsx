@@ -61,9 +61,10 @@ export function Customers({ user }: CustomersProps) {
       const res = await apiRequest("POST", "/api/customers", { ...data, userId: user.id });
       return res.json();
     },
-    onSuccess: () => {
-      // Force immediate refetch
-      setTimeout(() => refetch(), 100);
+    onSuccess: async () => {
+      // Clear all cache and force refetch
+      await queryClient.resetQueries({ queryKey: ["/api/customers"] });
+      await refetch();
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Müşteri eklendi" });
@@ -78,8 +79,9 @@ export function Customers({ user }: CustomersProps) {
       const res = await apiRequest("PUT", `/api/customers/${id}`, data);
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers", user.id] });
+    onSuccess: async () => {
+      await queryClient.resetQueries({ queryKey: ["/api/customers"] });
+      await refetch();
       setIsModalOpen(false);
       setEditingCustomer(null);
       resetForm();
@@ -95,8 +97,9 @@ export function Customers({ user }: CustomersProps) {
       const res = await apiRequest("DELETE", `/api/customers/${id}`);
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers", user.id] });
+    onSuccess: async () => {
+      await queryClient.resetQueries({ queryKey: ["/api/customers"] });
+      await refetch();
       toast({ title: "Başarılı", description: "Müşteri silindi" });
     },
     onError: () => {

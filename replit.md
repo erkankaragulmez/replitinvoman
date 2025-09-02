@@ -29,6 +29,7 @@ FaturaYoneticim is a full-stack invoice and expense management application built
 ✓ Raporlar sayfasında ilk tab Geciken Alacaklar olarak değiştirildi
 ✓ Memory storage hot reload sorunu düzeltildi (global storage kullanımı)
 ✓ React Query cache ayarları optimize edildi
+✓ Query cache reset ve window reload eklendi veri görünürlüğü için
 
 # User Preferences
 

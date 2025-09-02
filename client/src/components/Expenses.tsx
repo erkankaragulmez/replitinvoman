@@ -64,12 +64,13 @@ export function Expenses({ user }: ExpensesProps) {
       });
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
-      queryClient.refetchQueries({ queryKey: ["/api/expenses", user.id] });
+    onSuccess: async () => {
+      await queryClient.resetQueries({ queryKey: ["/api/expenses"] });
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Masraf eklendi" });
+      // Force window reload to ensure data shows up
+      window.location.reload();
     },
     onError: () => {
       toast({ variant: "destructive", title: "Hata", description: "Masraf eklenemedi" });
