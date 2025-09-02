@@ -47,7 +47,7 @@ export function Customers({ user }: CustomersProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: customers = [], isLoading } = useQuery({
+  const { data: customers = [], isLoading, refetch } = useQuery({
     queryKey: ["/api/customers", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/customers?userId=${user.id}`);
@@ -62,8 +62,8 @@ export function Customers({ user }: CustomersProps) {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      queryClient.refetchQueries({ queryKey: ["/api/customers", user.id] });
+      // Force immediate refetch
+      setTimeout(() => refetch(), 100);
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Müşteri eklendi" });
