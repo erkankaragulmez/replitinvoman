@@ -83,15 +83,14 @@ export function Customers({ user }: CustomersProps) {
       });
       if (!res.ok) throw new Error("Müşteri oluşturulamadı");
       
-      const newCustomer = await res.json();
-      console.log("CREATED CUSTOMER:", newCustomer);
-      
-      // Add customer directly to state instead of refetching
-      setCustomers(prev => [...prev, newCustomer]);
-      
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Müşteri eklendi" });
+      
+      // Force page reload to show new data
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       toast({ variant: "destructive", title: "Hata", description: "Müşteri eklenemedi" });
     }
@@ -106,15 +105,15 @@ export function Customers({ user }: CustomersProps) {
       });
       if (!res.ok) throw new Error("Müşteri güncellenemedi");
       
-      const updatedCustomer = await res.json();
-      
-      // Update customer directly in state
-      setCustomers(prev => prev.map(c => c.id === id ? updatedCustomer : c));
-      
       setIsModalOpen(false);
       setEditingCustomer(null);
       resetForm();
       toast({ title: "Başarılı", description: "Müşteri güncellendi" });
+      
+      // Force page reload to show updated data
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       toast({ variant: "destructive", title: "Hata", description: "Müşteri güncellenemedi" });
     }
@@ -125,10 +124,12 @@ export function Customers({ user }: CustomersProps) {
       const res = await fetch(`/api/customers/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Müşteri silinemedi");
       
-      // Remove customer directly from state
-      setCustomers(prev => prev.filter(c => c.id !== id));
-      
       toast({ title: "Başarılı", description: "Müşteri silindi" });
+      
+      // Force page reload to show updated list
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       toast({ variant: "destructive", title: "Hata", description: "Müşteri silinemedi" });
     }

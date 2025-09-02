@@ -64,13 +64,14 @@ export function Expenses({ user }: ExpensesProps) {
       });
       return res.json();
     },
-    onSuccess: async () => {
-      await queryClient.resetQueries({ queryKey: ["/api/expenses"] });
+    onSuccess: () => {
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Masraf eklendi" });
-      // Force window reload to ensure data shows up
-      window.location.reload();
+      // Force page reload to show new data
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     },
     onError: () => {
       toast({ variant: "destructive", title: "Hata", description: "Masraf eklenemedi" });
