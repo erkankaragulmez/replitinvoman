@@ -12,6 +12,13 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("summary");
 
+  // Force admin tab if URL contains #admin
+  useEffect(() => {
+    if (window.location.hash === "#admin") {
+      setActiveTab("admin");
+    }
+  }, []);
+
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
     if (storedUser) {
@@ -75,19 +82,26 @@ export default function Home() {
         onTabChange={setActiveTab}
       />
       
-      {/* Debug info - temporary */}
-      <div className="bg-yellow-100 dark:bg-yellow-900 p-3 text-center border-b">
-        <div className="text-sm">
-          <strong>Debug:</strong> Role = "{user?.role || 'undefined'}" | 
-          Email = "{user?.email}" | 
-          Admin sekmesi = {user && user.role === "admin" ? "✅ Görünmeli" : "❌ Görünmez"}
+      {/* Direct Admin Access */}
+      <div className="bg-blue-50 dark:bg-blue-900 p-4 text-center border-b">
+        <div className="text-sm mb-3">
+          <strong>Admin Panel Erişimi:</strong> 
         </div>
-        <button 
-          onClick={refreshUserData}
-          className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
-        >
-          🔄 Admin Yetkisini Kontrol Et
-        </button>
+        <div className="space-x-4">
+          <button 
+            onClick={() => setActiveTab("admin")}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium"
+          >
+            🎯 Admin Paneli Aç
+          </button>
+          <a 
+            href="#admin"
+            onClick={() => setActiveTab("admin")}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium inline-block"
+          >
+            📱 Admin Link
+          </a>
+        </div>
       </div>
       
       {/* Desktop Navigation Tabs */}
