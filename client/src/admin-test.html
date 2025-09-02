@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .admin-panel {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            background: #dc2626;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .test-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .test-btn {
+            background: #3b82f6;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .test-btn:hover {
+            background: #2563eb;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .success { background: #dcfce7; color: #166534; }
+        .error { background: #fef2f2; color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="admin-panel">
+        <div class="header">
+            <h1>🔧 Admin Panel Test Sayfası</h1>
+            <p>FaturaYoneticim Admin Özellikleri</p>
+        </div>
+
+        <div class="test-buttons">
+            <button class="test-btn" onclick="testUsers()">👥 Kullanıcıları Listele</button>
+            <button class="test-btn" onclick="createTestUser()">➕ Test Kullanıcısı Ekle</button>
+            <button class="test-btn" onclick="exportData('customers')">📁 Müşteri CSV İndir</button>
+            <button class="test-btn" onclick="exportData('invoices')">📄 Fatura CSV İndir</button>
+            <button class="test-btn" onclick="exportData('expenses')">💳 Masraf CSV İndir</button>
+            <button class="test-btn" onclick="exportData('users')">👤 Kullanıcı CSV İndir</button>
+            <button class="test-btn" onclick="showUpload()">📤 CSV Yükle</button>
+            <button class="test-btn" onclick="window.location.href='/'">🏠 Ana Sayfaya Dön</button>
+        </div>
+
+        <div id="result" class="result"></div>
+
+        <div id="upload-area" style="display:none; margin-top: 20px;">
+            <h3>📤 CSV Dosyası Yükle</h3>
+            <select id="upload-type">
+                <option value="customers">Müşteriler</option>
+                <option value="invoices">Faturalar</option>
+                <option value="expenses">Masraflar</option>
+                <option value="users">Kullanıcılar</option>
+            </select>
+            <input type="file" id="csv-file" accept=".csv" style="margin: 10px;">
+            <button onclick="uploadCSV()" class="test-btn">Yükle</button>
+        </div>
+    </div>
+
+    <script>
+        const adminUserId = '92e2b0ed-1657-4ca7-84f9-1537a27eb172'; // Your admin user ID
+
+        async function testUsers() {
+            showResult('Kullanıcılar yükleniyor...', 'info');
+            try {
+                const response = await fetch('/api/admin/users', {
+                    headers: { 'adminUserId': adminUserId }
+                });
+                if (response.ok) {
+                    const users = await response.json();
+                    showResult(`✅ ${users.length} kullanıcı bulundu:\n${users.map(u => `- ${u.name} (${u.email}) - ${u.role}`).join('\n')}`, 'success');
+                } else {
+                    showResult(`❌ Hata: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Bağlantı hatası: ${error.message}`, 'error');
+            }
+        }
+
+        async function createTestUser() {
+            showResult('Test kullanıcısı oluşturuluyor...', 'info');
+            try {
+                const response = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'adminUserId': adminUserId 
+                    },
+                    body: JSON.stringify({
+                        name: 'Test User',
+                        email: 'test@example.com',
+                        password: '123456',
+                        role: 'user'
+                    })
+                });
+                if (response.ok) {
+                    const user = await response.json();
+                    showResult(`✅ Test kullanıcısı oluşturuldu: ${user.user.name}`, 'success');
+                } else {
+                    const error = await response.json();
+                    showResult(`❌ Hata: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Bağlantı hatası: ${error.message}`, 'error');
+            }
+        }
+
+        async function exportData(type) {
+            showResult(`${type} verileri indiriliyor...`, 'info');
+            try {
+                const response = await fetch(`/api/admin/export/${type}?userId=${adminUserId}`, {
+                    headers: { 'adminUserId': adminUserId }
+                });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${type}_export.csv`;
+                    a.click();
+                    showResult(`✅ ${type} CSV dosyası indirildi!`, 'success');
+                } else {
+                    showResult(`❌ İndirme hatası: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Bağlantı hatası: ${error.message}`, 'error');
+            }
+        }
+
+        function showUpload() {
+            document.getElementById('upload-area').style.display = 'block';
+        }
+
+        async function uploadCSV() {
+            const fileInput = document.getElementById('csv-file');
+            const typeSelect = document.getElementById('upload-type');
+            
+            if (!fileInput.files[0]) {
+                showResult('❌ Lütfen bir dosya seçin', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            showResult('CSV dosyası yükleniyor...', 'info');
+            try {
+                const response = await fetch(`/api/admin/import/${typeSelect.value}`, {
+                    method: 'POST',
+                    headers: { 'adminUserId': adminUserId },
+                    body: formData
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    showResult(`✅ CSV dosyası yüklendi! ${result.imported} kayıt eklendi.`, 'success');
+                } else {
+                    const error = await response.json();
+                    showResult(`❌ Yükleme hatası: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Bağlantı hatası: ${error.message}`, 'error');
+            }
+        }
+
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = `result ${type}`;
+            result.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

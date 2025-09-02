@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import path from "path";
 import { storage } from "./storage";
 import { insertUserSchema, insertCustomerSchema, insertInvoiceSchema, insertExpenseSchema, insertPaymentSchema } from "@shared/schema";
 
@@ -24,6 +25,10 @@ const requireAdmin = async (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve admin test page
+  app.get("/admin-test", (req, res) => {
+    res.sendFile(path.join(__dirname, "../client/src/admin-test.html"));
+  });
   // Auth routes
   app.post("/api/auth/register", async (req, res) => {
     try {
