@@ -32,7 +32,7 @@ export function Invoices({ user }: InvoicesProps) {
     queryFn: async () => {
       const res = await fetch(`/api/customers?userId=${user.id}`);
       if (!res.ok) throw new Error("Müşteriler yüklenemedi");
-      return res.json();
+      return await res.json();
     },
   });
 
@@ -68,7 +68,7 @@ export function Invoices({ user }: InvoicesProps) {
     queryFn: async () => {
       const res = await fetch(`/api/invoices?userId=${user.id}`);
       if (!res.ok) throw new Error("Faturalar yüklenemedi");
-      return res.json();
+      return await res.json();
     },
   });
 
@@ -79,7 +79,7 @@ export function Invoices({ user }: InvoicesProps) {
         userId: user.id,
         amount: data.amount.toString()
       });
-      return res.json();
+      return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
@@ -99,7 +99,7 @@ export function Invoices({ user }: InvoicesProps) {
         ...data,
         amount: data.amount.toString()
       });
-      return res.json();
+      return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
@@ -117,7 +117,7 @@ export function Invoices({ user }: InvoicesProps) {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await apiRequest("DELETE", `/api/invoices/${id}`);
-      return res.json();
+      return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });

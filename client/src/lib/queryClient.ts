@@ -46,8 +46,9 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: true,
       staleTime: 0, // Data becomes stale immediately
+      gcTime: 0, // Don't cache data (React Query v5)
       retry: false,
     },
     mutations: {

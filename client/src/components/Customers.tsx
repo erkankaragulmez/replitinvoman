@@ -47,13 +47,17 @@ export function Customers({ user }: CustomersProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: customers = [], isLoading } = useQuery({
+  const { data: customers = [], isLoading, refetch } = useQuery({
     queryKey: ["/api/customers", user.id],
     queryFn: async () => {
       const res = await fetch(`/api/customers?userId=${user.id}`);
       if (!res.ok) throw new Error("Müşteriler yüklenemedi");
-      return res.json();
+      const data = await res.json();
+      console.log('Customers data fetched:', data);
+      return data;
     },
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const createMutation = useMutation({
@@ -61,9 +65,9 @@ export function Customers({ user }: CustomersProps) {
       const res = await apiRequest("POST", "/api/customers", { ...data, userId: user.id });
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      queryClient.refetchQueries({ queryKey: ["/api/customers", user.id] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      await refetch();
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Müşteri eklendi" });

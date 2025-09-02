@@ -59,7 +59,14 @@ export class MemStorage implements IStorage {
 
   // Customer methods
   async getCustomers(userId: string): Promise<Customer[]> {
-    return Array.from(this.customers.values()).filter(customer => customer.userId === userId);
+    const allCustomers = Array.from(this.customers.values());
+    const filteredCustomers = allCustomers.filter(customer => customer.userId === userId);
+    console.log(`Getting customers for userId: ${userId}`);
+    console.log(`Total customers in storage: ${allCustomers.length}`);
+    console.log(`Filtered customers for this user: ${filteredCustomers.length}`);
+    console.log('All customers:', allCustomers);
+    console.log('Filtered customers:', filteredCustomers);
+    return filteredCustomers;
   }
 
   async getCustomer(id: string): Promise<Customer | undefined> {
@@ -75,7 +82,9 @@ export class MemStorage implements IStorage {
       email: insertCustomer.email || null,
       phone: insertCustomer.phone || null
     };
+    console.log('Creating customer:', customer);
     this.customers.set(id, customer);
+    console.log('Total customers in storage:', this.customers.size);
     return customer;
   }
 
@@ -231,3 +240,6 @@ export class MemStorage implements IStorage {
 }
 
 export const storage = new MemStorage();
+
+// Add some logging to debug storage issues
+console.log('Storage initialized at:', new Date().toISOString());
