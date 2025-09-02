@@ -50,9 +50,17 @@ export function Customers({ user }: CustomersProps) {
   const fetchCustomers = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`/api/customers?userId=${user.id}&t=${Date.now()}`);
+      const res = await fetch(`/api/customers?userId=${user.id}&t=${Date.now()}`, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
       if (!res.ok) throw new Error("Müşteriler yüklenemedi");
       const data = await res.json();
+      console.log("FETCHED CUSTOMERS:", data);
       setCustomers(data);
     } catch (error) {
       console.error("Error fetching customers:", error);
@@ -75,7 +83,12 @@ export function Customers({ user }: CustomersProps) {
       });
       if (!res.ok) throw new Error("Müşteri oluşturulamadı");
       
-      await fetchCustomers(); // Refresh list immediately
+      const newCustomer = await res.json();
+      console.log("CREATED CUSTOMER:", newCustomer);
+      
+      // Add customer directly to state instead of refetching
+      setCustomers(prev => [...prev, newCustomer]);
+      
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Müşteri eklendi" });
@@ -93,7 +106,11 @@ export function Customers({ user }: CustomersProps) {
       });
       if (!res.ok) throw new Error("Müşteri güncellenemedi");
       
-      await fetchCustomers(); // Refresh list immediately
+      const updatedCustomer = await res.json();
+      
+      // Update customer directly in state
+      setCustomers(prev => prev.map(c => c.id === id ? updatedCustomer : c));
+      
       setIsModalOpen(false);
       setEditingCustomer(null);
       resetForm();
@@ -108,7 +125,9 @@ export function Customers({ user }: CustomersProps) {
       const res = await fetch(`/api/customers/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Müşteri silinemedi");
       
-      await fetchCustomers(); // Refresh list immediately
+      // Remove customer directly from state
+      setCustomers(prev => prev.filter(c => c.id !== id));
+      
       toast({ title: "Başarılı", description: "Müşteri silindi" });
     } catch (error) {
       toast({ variant: "destructive", title: "Hata", description: "Müşteri silinemedi" });

@@ -8,6 +8,7 @@ declare global {
   var __storage_invoices__: Map<string, Invoice> | undefined;
   var __storage_expenses__: Map<string, Expense> | undefined;
   var __storage_payments__: Map<string, Payment> | undefined;
+  var __storage_instance__: MemStorage | undefined;
 }
 
 export interface IStorage {
@@ -246,4 +247,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Create singleton storage instance that persists across hot reloads
+export const storage = global.__storage_instance__ || (global.__storage_instance__ = new MemStorage());
