@@ -99,6 +99,16 @@ export class MemStorage implements IStorage {
     }
   }
 
+  // Helper method to make a user admin
+  async makeUserAdmin(email: string): Promise<boolean> {
+    const user = await this.getUserByEmail(email);
+    if (user) {
+      await this.updateUser(user.id, { role: "admin" });
+      return true;
+    }
+    return false;
+  }
+
   // Customer methods
   async getCustomers(userId: string): Promise<Customer[]> {
     return Array.from(this.customers.values()).filter(customer => customer.userId === userId);

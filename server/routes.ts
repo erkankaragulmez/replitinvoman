@@ -137,6 +137,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Temporary admin maker endpoint (for testing)
+  app.post("/api/make-admin", async (req, res) => {
+    try {
+      const { email } = req.body;
+      const success = await storage.makeUserAdmin(email);
+      if (success) {
+        res.json({ success: true, message: "Kullanıcı admin yapıldı" });
+      } else {
+        res.status(404).json({ error: "Kullanıcı bulunamadı" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Admin yapma işlemi başarısız" });
+    }
+  });
+
   // Data Export/Import Routes
   app.get("/api/admin/export/:type", requireAdmin, async (req, res) => {
     try {
