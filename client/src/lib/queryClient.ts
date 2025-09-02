@@ -56,3 +56,11 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// Add global query cache event listeners for debugging
+queryClient.getQueryCache().subscribe((event) => {
+  console.log('Query cache event:', event.type, event.query?.queryKey);
+  if (event.type === 'updated') {
+    console.log('Query data updated:', event.query?.state?.data);
+  }
+});
