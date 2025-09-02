@@ -47,31 +47,22 @@ export function Customers({ user }: CustomersProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: customers = [], isLoading, refetch } = useQuery({
+  const { data: customers = [], isLoading } = useQuery({
     queryKey: ["/api/customers", user.id],
     queryFn: async () => {
-      console.log('Fetching customers for userId:', user.id);
       const res = await fetch(`/api/customers?userId=${user.id}`);
       if (!res.ok) throw new Error("Müşteriler yüklenemedi");
-      const data = await res.json();
-      console.log('Customers data fetched:', data);
-      console.log('Customer count:', data.length);
-      return data;
+      return res.json();
     },
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
       const res = await apiRequest("POST", "/api/customers", { ...data, userId: user.id });
-      return await res.json();
+      return res.json();
     },
-    onSuccess: async () => {
-      console.log('Customer created successfully, invalidating cache and refetching...');
-      await queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      await refetch();
-      console.log('Refetch completed');
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers", user.id] });
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Müşteri eklendi" });
@@ -84,11 +75,10 @@ export function Customers({ user }: CustomersProps) {
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...data }: any) => {
       const res = await apiRequest("PUT", `/api/customers/${id}`, data);
-      return await res.json();
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      queryClient.refetchQueries({ queryKey: ["/api/customers", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customers", user.id] });
       setIsModalOpen(false);
       setEditingCustomer(null);
       resetForm();
@@ -102,11 +92,10 @@ export function Customers({ user }: CustomersProps) {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await apiRequest("DELETE", `/api/customers/${id}`);
-      return await res.json();
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      queryClient.refetchQueries({ queryKey: ["/api/customers", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customers", user.id] });
       toast({ title: "Başarılı", description: "Müşteri silindi" });
     },
     onError: () => {
@@ -175,14 +164,6 @@ export function Customers({ user }: CustomersProps) {
     (customer.phone && customer.phone.includes(searchTerm)) ||
     (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-
-  console.log('=== CUSTOMERS DEBUG ===');
-  console.log('User ID:', user.id);
-  console.log('Current customers data:', customers);
-  console.log('Filtered customers:', filteredCustomers);
-  console.log('Search term:', searchTerm);
-  console.log('Is loading:', isLoading);
-  console.log('========================');
 
   if (isLoading) {
     return (

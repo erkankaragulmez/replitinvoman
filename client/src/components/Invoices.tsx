@@ -32,7 +32,7 @@ export function Invoices({ user }: InvoicesProps) {
     queryFn: async () => {
       const res = await fetch(`/api/customers?userId=${user.id}`);
       if (!res.ok) throw new Error("Müşteriler yüklenemedi");
-      return await res.json();
+      return res.json();
     },
   });
 
@@ -68,7 +68,7 @@ export function Invoices({ user }: InvoicesProps) {
     queryFn: async () => {
       const res = await fetch(`/api/invoices?userId=${user.id}`);
       if (!res.ok) throw new Error("Faturalar yüklenemedi");
-      return await res.json();
+      return res.json();
     },
   });
 
@@ -79,11 +79,10 @@ export function Invoices({ user }: InvoicesProps) {
         userId: user.id,
         amount: data.amount.toString()
       });
-      return await res.json();
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
-      queryClient.refetchQueries({ queryKey: ["/api/invoices", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices", user.id] });
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Fatura eklendi" });
@@ -99,11 +98,10 @@ export function Invoices({ user }: InvoicesProps) {
         ...data,
         amount: data.amount.toString()
       });
-      return await res.json();
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
-      queryClient.refetchQueries({ queryKey: ["/api/invoices", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices", user.id] });
       setIsModalOpen(false);
       setEditingInvoice(null);
       resetForm();
@@ -117,11 +115,10 @@ export function Invoices({ user }: InvoicesProps) {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await apiRequest("DELETE", `/api/invoices/${id}`);
-      return await res.json();
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
-      queryClient.refetchQueries({ queryKey: ["/api/invoices", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices", user.id] });
       toast({ title: "Başarılı", description: "Fatura silindi" });
     },
     onError: () => {

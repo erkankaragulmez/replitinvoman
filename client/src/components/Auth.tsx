@@ -3,6 +3,8 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "lucide-react";
+import { ForgotPassword } from "./ForgotPassword";
+import { GoogleAuth } from "./GoogleAuth";
 
 interface AuthProps {
   onLogin: (user: any) => void;
@@ -10,10 +12,16 @@ interface AuthProps {
 
 export function Auth({ onLogin }: AuthProps) {
   const [isRegister, setIsRegister] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { toast } = useToast();
+
+  // Show forgot password screen
+  if (showForgotPassword) {
+    return <ForgotPassword onBack={() => setShowForgotPassword(false)} />;
+  }
 
   const loginMutation = useMutation({
     mutationFn: async (data: { email: string; password: string }) => {
@@ -100,7 +108,7 @@ export function Auth({ onLogin }: AuthProps) {
               </div>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-primary">
-              Invoice Manager
+              FaturaYoneticim
             </h1>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base">
               Fatura yönetim sisteminize hoş geldiniz
@@ -169,6 +177,29 @@ export function Auth({ onLogin }: AuthProps) {
                 )}
               </button>
             </form>
+
+            {!isRegister && (
+              <div className="text-center">
+                <button
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-muted-foreground hover:text-primary hover:underline"
+                  data-testid="forgot-password-link"
+                >
+                  Şifremi Unuttum
+                </button>
+              </div>
+            )}
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-card text-muted-foreground">veya</span>
+              </div>
+            </div>
+
+            <GoogleAuth onSuccess={onLogin} />
             
             <div className="text-center">
               <p className="text-muted-foreground text-sm">

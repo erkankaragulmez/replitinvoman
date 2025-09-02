@@ -51,7 +51,7 @@ export function Expenses({ user }: ExpensesProps) {
     queryFn: async () => {
       const res = await fetch(`/api/expenses?userId=${user.id}`);
       if (!res.ok) throw new Error("Masraflar yüklenemedi");
-      return await res.json();
+      return res.json();
     },
   });
 
@@ -62,11 +62,10 @@ export function Expenses({ user }: ExpensesProps) {
         userId: user.id,
         amount: data.amount.toString()
       });
-      return await res.json();
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
-      queryClient.refetchQueries({ queryKey: ["/api/expenses", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/expenses", user.id] });
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Masraf eklendi" });
@@ -82,11 +81,10 @@ export function Expenses({ user }: ExpensesProps) {
         ...data,
         amount: data.amount.toString()
       });
-      return await res.json();
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
-      queryClient.refetchQueries({ queryKey: ["/api/expenses", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/expenses", user.id] });
       setIsModalOpen(false);
       setEditingExpense(null);
       resetForm();
@@ -100,11 +98,10 @@ export function Expenses({ user }: ExpensesProps) {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await apiRequest("DELETE", `/api/expenses/${id}`);
-      return await res.json();
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
-      queryClient.refetchQueries({ queryKey: ["/api/expenses", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/expenses", user.id] });
       toast({ title: "Başarılı", description: "Masraf silindi" });
     },
     onError: () => {

@@ -46,21 +46,12 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
-      refetchOnWindowFocus: true,
-      staleTime: 0, // Data becomes stale immediately
-      gcTime: 0, // Don't cache data (React Query v5)
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
       retry: false,
     },
     mutations: {
       retry: false,
     },
   },
-});
-
-// Add global query cache event listeners for debugging
-queryClient.getQueryCache().subscribe((event) => {
-  console.log('Query cache event:', event.type, event.query?.queryKey);
-  if (event.type === 'updated') {
-    console.log('Query data updated:', event.query?.state?.data);
-  }
 });
