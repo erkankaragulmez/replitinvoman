@@ -11,6 +11,7 @@ import { AdminPanel } from "../components/AdminPanel";
 export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("summary");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Force admin tab if URL contains #admin
   useEffect(() => {
@@ -116,25 +117,110 @@ export default function Home() {
           🎯 ADMIN PANELI AÇ
         </button>
         
-        {/* TEST PROFILE BUTTON ON TOP */}
+        {/* PROFILE DROPDOWN ON TOP */}
         <div style={{ position: 'absolute', top: '10px', right: '20px', pointerEvents: 'auto' }}>
-          <button 
-            onClick={() => {
-              alert('ÜST PROFIL BUTONU ÇALIŞIYOR!');
-            }}
-            style={{
-              backgroundColor: '#3b82f6',
-              color: 'white',
-              padding: '10px 15px',
-              borderRadius: '6px',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500'
-            }}
-          >
-            👤 {user?.name || 'Profil'} ({user?.role || 'user'})
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button 
+              onClick={() => {
+                setIsProfileOpen(!isProfileOpen);
+              }}
+              style={{
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                padding: '10px 15px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              👤 {user?.name || 'Profil'}
+              <span style={{ fontSize: '12px' }}>▼</span>
+            </button>
+            
+            {/* Profile Dropdown */}
+            {isProfileOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: '0',
+                marginTop: '8px',
+                width: '280px',
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                zIndex: 99999
+              }}>
+                <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '50px',
+                      height: '50px',
+                      backgroundColor: '#dbeafe',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '24px'
+                    }}>
+                      👤
+                    </div>
+                    <div>
+                      <p style={{ fontWeight: '600', color: '#1f2937', margin: '0', fontSize: '18px' }}>
+                        {user?.name || 'Kullanıcı'}
+                      </p>
+                      <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0' }}>
+                        {user?.email || 'email@example.com'}
+                      </p>
+                      <span style={{
+                        fontSize: '12px',
+                        backgroundColor: user?.role === 'admin' ? '#fef3c7' : '#f3f4f6',
+                        color: user?.role === 'admin' ? '#d97706' : '#374151',
+                        padding: '6px 12px',
+                        borderRadius: '12px',
+                        fontWeight: '500',
+                        display: 'inline-block'
+                      }}>
+                        {user?.role === 'admin' ? '👑 Admin' : '👤 Kullanıcı'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div style={{ padding: '8px' }}>
+                  <button
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      handleLogout();
+                    }}
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '12px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      color: '#dc2626',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                    onMouseOver={(e) => (e.target as HTMLElement).style.backgroundColor = '#f9fafb'}
+                    onMouseOut={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}
+                  >
+                    🚪 Çıkış Yap
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       
