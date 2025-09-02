@@ -6,6 +6,10 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>;
+  updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
+  deleteUser(id: string): Promise<boolean>;
+  updateLastLogin(id: string): Promise<void>;
   
   // Customer methods
   getCustomers(userId: string): Promise<Customer[]>;
@@ -52,9 +56,47 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const now = new Date();
+    const user: User = { 
+      ...insertUser, 
+      id,
+      role: insertUser.role || "user",
+      isActive: insertUser.isActive !== undefined ? insertUser.isActive : true,
+      lastLoginAt: null,
+      createdAt: now,
+      updatedAt: now
+    };
     this.users.set(id, user);
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async updateUser(id: string, updateData: Partial<User>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { 
+      ...user, 
+      ...updateData, 
+      updatedAt: new Date() 
+    };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    return this.users.delete(id);
+  }
+
+  async updateLastLogin(id: string): Promise<void> {
+    const user = this.users.get(id);
+    if (user) {
+      user.lastLoginAt = new Date();
+      this.users.set(id, user);
+    }
   }
 
   // Customer methods

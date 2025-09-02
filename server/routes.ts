@@ -3,6 +3,26 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertCustomerSchema, insertInvoiceSchema, insertExpenseSchema, insertPaymentSchema } from "@shared/schema";
 
+// Admin middleware
+const requireAdmin = async (req: any, res: any, next: any) => {
+  try {
+    const { adminUserId } = req.headers;
+    if (!adminUserId) {
+      return res.status(401).json({ error: "Admin yetki gerekli" });
+    }
+    
+    const adminUser = await storage.getUser(adminUserId as string);
+    if (!adminUser || adminUser.role !== "admin") {
+      return res.status(403).json({ error: "Admin yetkisi gerekli" });
+    }
+    
+    req.adminUser = adminUser;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: "Yetki doğrulaması başarısız" });
+  }
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post("/api/auth/register", async (req, res) => {
@@ -31,9 +51,198 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Email veya şifre yanlış." });
       }
       
-      res.json({ user: { id: user.id, name: user.name, email: user.email } });
+      if (!user.isActive) {
+        return res.status(401).json({ error: "Hesabınız aktif değil." });
+      }
+      
+      // Update last login
+      await storage.updateLastLogin(user.id);
+      
+      res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
     } catch (error) {
       res.status(400).json({ error: "Giriş başarısız oldu." });
+    }
+  });
+
+  // Admin User Management Routes
+  app.get("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Remove passwords from response
+      const safeUsers = users.map(user => ({
+        ...user,
+        password: undefined
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Kullanıcılar alınamadı" });
+    }
+  });
+
+  app.post("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ error: "Bu email zaten kayıtlı!" });
+      }
+      
+      const user = await storage.createUser(userData);
+      const { password, ...safeUser } = user;
+      res.json(safeUser);
+    } catch (error) {
+      res.status(400).json({ error: "Kullanıcı oluşturulamadı" });
+    }
+  });
+
+  app.put("/api/admin/users/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { password, ...updateData } = req.body;
+      
+      // Hash password if provided (in real app you'd hash it)
+      const finalUpdateData = password ? { ...updateData, password } : updateData;
+      
+      const user = await storage.updateUser(id, finalUpdateData);
+      if (!user) {
+        return res.status(404).json({ error: "Kullanıcı bulunamadı" });
+      }
+      
+      const { password: _, ...safeUser } = user;
+      res.json(safeUser);
+    } catch (error) {
+      res.status(400).json({ error: "Kullanıcı güncellenemedi" });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { adminUser } = req;
+      
+      // Prevent admin from deleting themselves
+      if (id === adminUser.id) {
+        return res.status(400).json({ error: "Kendi hesabınızı silemezsiniz" });
+      }
+      
+      const deleted = await storage.deleteUser(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Kullanıcı bulunamadı" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(400).json({ error: "Kullanıcı silinemedi" });
+    }
+  });
+
+  // Data Export/Import Routes
+  app.get("/api/admin/export/:type", requireAdmin, async (req, res) => {
+    try {
+      const { type } = req.params;
+      const { userId } = req.query;
+      
+      let data: any[] = [];
+      let filename = "";
+      
+      switch (type) {
+        case "customers":
+          data = userId ? await storage.getCustomers(userId as string) : [];
+          filename = "musteriler.csv";
+          break;
+        case "invoices":
+          data = userId ? await storage.getInvoices(userId as string) : [];
+          filename = "faturalar.csv";
+          break;
+        case "expenses":
+          data = userId ? await storage.getExpenses(userId as string) : [];
+          filename = "masraflar.csv";
+          break;
+        case "users":
+          const users = await storage.getAllUsers();
+          data = users.map(({ password, ...user }) => user);
+          filename = "kullanicilar.csv";
+          break;
+        default:
+          return res.status(400).json({ error: "Geçersiz export tipi" });
+      }
+      
+      if (data.length === 0) {
+        return res.json({ message: "Dışa aktarılacak veri bulunamadı", data: [] });
+      }
+      
+      // Convert to CSV
+      const headers = Object.keys(data[0]);
+      const csv = [
+        headers.join(","),
+        ...data.map(row => headers.map(header => {
+          const value = row[header];
+          // Handle comma and quotes in data
+          if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+            return `"${value.replace(/"/g, '""')}"`;
+          }
+          return value || '';
+        }).join(","))
+      ].join("\n");
+      
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send('\ufeff' + csv); // BOM for proper Turkish character display
+    } catch (error) {
+      console.error("Export error:", error);
+      res.status(500).json({ error: "Dışa aktarma başarısız" });
+    }
+  });
+
+  app.post("/api/admin/import/:type", requireAdmin, async (req, res) => {
+    try {
+      const { type } = req.params;
+      const { data, userId } = req.body;
+      
+      if (!Array.isArray(data) || data.length === 0) {
+        return res.status(400).json({ error: "Geçerli veri array'i gerekli" });
+      }
+      
+      let importedCount = 0;
+      let errors: string[] = [];
+      
+      for (const item of data) {
+        try {
+          switch (type) {
+            case "customers":
+              if (!userId) throw new Error("User ID gerekli");
+              await storage.createCustomer({ ...item, userId });
+              break;
+            case "invoices":
+              if (!userId) throw new Error("User ID gerekli");
+              await storage.createInvoice({ ...item, userId });
+              break;
+            case "expenses":
+              if (!userId) throw new Error("User ID gerekli");
+              await storage.createExpense({ ...item, userId });
+              break;
+            case "users":
+              await storage.createUser(item);
+              break;
+            default:
+              throw new Error("Geçersiz import tipi");
+          }
+          importedCount++;
+        } catch (error) {
+          errors.push(`Satır ${importedCount + 1}: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
+        }
+      }
+      
+      res.json({
+        success: true,
+        importedCount,
+        totalCount: data.length,
+        errors: errors.length > 0 ? errors : undefined
+      });
+    } catch (error) {
+      console.error("Import error:", error);
+      res.status(500).json({ error: "İçe aktarma başarısız" });
     }
   });
 

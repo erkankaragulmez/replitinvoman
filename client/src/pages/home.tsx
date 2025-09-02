@@ -6,9 +6,10 @@ import { Customers } from "@/components/Customers";
 import { Invoices } from "@/components/Invoices";
 import { Expenses } from "@/components/Expenses";
 import { Reports } from "@/components/Reports";
+import { AdminPanel } from "../components/AdminPanel";
 
 export default function Home() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("summary");
 
   useEffect(() => {
@@ -54,7 +55,8 @@ export default function Home() {
               { id: "customers", label: "Müşteriler", icon: "👥" },
               { id: "invoices", label: "Faturalar", icon: "📄" },
               { id: "expenses", label: "Masraflar", icon: "💳" },
-              { id: "reports", label: "Raporlar", icon: "📈" }
+              { id: "reports", label: "Raporlar", icon: "📈" },
+              ...(user && user.role === "admin" ? [{ id: "admin", label: "Yönetim", icon: "⚙️" }] : [])
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -80,6 +82,7 @@ export default function Home() {
         {activeTab === "invoices" && <Invoices user={user} />}
         {activeTab === "expenses" && <Expenses user={user} />}
         {activeTab === "reports" && <Reports user={user} />}
+        {activeTab === "admin" && user && user.role === "admin" && <AdminPanel user={user} />}
       </main>
     </div>
   );
