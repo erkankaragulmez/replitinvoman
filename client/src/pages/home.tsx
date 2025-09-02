@@ -89,7 +89,8 @@ export default function Home() {
         fontSize: '20px',
         fontWeight: 'bold',
         zIndex: 999,
-        boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+        boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+        pointerEvents: 'none'
       }}>
         🚨 ADMIN PANEL ERİŞİMİ 🚨
         <br/>
@@ -108,11 +109,33 @@ export default function Home() {
             fontSize: '18px',
             fontWeight: 'bold',
             cursor: 'pointer',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            pointerEvents: 'auto'
           }}
         >
           🎯 ADMIN PANELI AÇ
         </button>
+        
+        {/* TEST PROFILE BUTTON ON TOP */}
+        <div style={{ position: 'absolute', top: '10px', right: '20px', pointerEvents: 'auto' }}>
+          <button 
+            onClick={() => {
+              alert('ÜST PROFIL BUTONU ÇALIŞIYOR!');
+            }}
+            style={{
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              padding: '10px 15px',
+              borderRadius: '6px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            👤 {user?.name || 'Profil'} ({user?.role || 'user'})
+          </button>
+        </div>
       </div>
       
       {/* Main content with top padding for fixed header */}
