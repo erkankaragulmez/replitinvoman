@@ -65,13 +65,10 @@ export function Expenses({ user }: ExpensesProps) {
       return res.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/expenses", user.id] });
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Masraf eklendi" });
-      // Force page reload to show new data
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
     },
     onError: () => {
       toast({ variant: "destructive", title: "Hata", description: "Masraf eklenemedi" });

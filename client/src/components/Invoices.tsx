@@ -82,13 +82,10 @@ export function Invoices({ user }: InvoicesProps) {
       return res.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices", user.id] });
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Fatura eklendi" });
-      // Force page reload to show new data
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
     },
     onError: () => {
       toast({ variant: "destructive", title: "Hata", description: "Fatura eklenemedi" });

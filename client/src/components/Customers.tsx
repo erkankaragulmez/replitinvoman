@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Modal } from "./Modal";
 import { Plus, Edit2, Trash2, Users, Search, Phone, Mail, Eye } from "lucide-react";
@@ -43,97 +45,63 @@ export function Customers({ user }: CustomersProps) {
   };
 
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchCustomers = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch(`/api/customers?userId=${user.id}&t=${Date.now()}`, {
-        method: 'GET',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      });
+  const { data: customers = [], isLoading } = useQuery({
+    queryKey: ["/api/customers", user.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/customers?userId=${user.id}`);
       if (!res.ok) throw new Error("Müşteriler yüklenemedi");
-      const data = await res.json();
-      console.log("FETCHED CUSTOMERS:", data);
-      setCustomers(data);
-    } catch (error) {
-      console.error("Error fetching customers:", error);
-      toast({ variant: "destructive", title: "Hata", description: "Müşteriler yüklenemedi" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      return res.json();
+    },
+  });
 
-  useEffect(() => {
-    fetchCustomers();
-  }, [user.id]);
-
-  const createCustomer = async (data: any) => {
-    try {
-      const res = await fetch("/api/customers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, userId: user.id }),
-      });
-      if (!res.ok) throw new Error("Müşteri oluşturulamadı");
-      
+  const createMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", "/api/customers", { ...data, userId: user.id });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers", user.id] });
       setIsModalOpen(false);
       resetForm();
       toast({ title: "Başarılı", description: "Müşteri eklendi" });
-      
-      // Force page reload to show new data
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
-    } catch (error) {
+    },
+    onError: () => {
       toast({ variant: "destructive", title: "Hata", description: "Müşteri eklenemedi" });
-    }
-  };
+    },
+  });
 
-  const updateCustomer = async (id: string, data: any) => {
-    try {
-      const res = await fetch(`/api/customers/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("Müşteri güncellenemedi");
-      
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, ...data }: any) => {
+      const res = await apiRequest("PUT", `/api/customers/${id}`, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers", user.id] });
       setIsModalOpen(false);
       setEditingCustomer(null);
       resetForm();
       toast({ title: "Başarılı", description: "Müşteri güncellendi" });
-      
-      // Force page reload to show updated data
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
-    } catch (error) {
+    },
+    onError: () => {
       toast({ variant: "destructive", title: "Hata", description: "Müşteri güncellenemedi" });
-    }
-  };
+    },
+  });
 
-  const deleteCustomer = async (id: string) => {
-    try {
-      const res = await fetch(`/api/customers/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Müşteri silinemedi");
-      
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiRequest("DELETE", `/api/customers/${id}`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers", user.id] });
       toast({ title: "Başarılı", description: "Müşteri silindi" });
-      
-      // Force page reload to show updated list
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
-    } catch (error) {
+    },
+    onError: () => {
       toast({ variant: "destructive", title: "Hata", description: "Müşteri silinemedi" });
-    }
-  };
+    },
+  });
 
   const resetForm = () => {
     const emptyForm = { name: "", phone: "", email: "", address: "" };
@@ -179,15 +147,15 @@ export function Customers({ user }: CustomersProps) {
     }
 
     if (editingCustomer) {
-      updateCustomer(editingCustomer.id, formData);
+      updateMutation.mutate({ id: editingCustomer.id, ...formData });
     } else {
-      createCustomer(formData);
+      createMutation.mutate(formData);
     }
   };
 
   const handleDelete = (id: string) => {
     if (window.confirm("Bu müşteriyi silmek istediğinizden emin misiniz?")) {
-      deleteCustomer(id);
+      deleteMutation.mutate(id);
     }
   };
 
@@ -383,12 +351,11 @@ export function Customers({ user }: CustomersProps) {
               </button>
               <button
                 type="submit"
-                disabled={false}
+                disabled={createMutation.isPending || updateMutation.isPending}
                 className="w-full sm:w-auto bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors touch-target disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="button-save-customer"
               >
-                <Users className="h-4 w-4 mr-2 inline-block" />
-                {editingCustomer ? "Güncelle" : "Kaydet"}
+                {createMutation.isPending || updateMutation.isPending ? "Kaydediliyor..." : editingCustomer ? "Güncelle" : "Kaydet"}
               </button>
             </div>
           </form>

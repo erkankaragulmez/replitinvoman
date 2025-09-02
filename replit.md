@@ -27,13 +27,6 @@ FaturaYoneticim is a full-stack invoice and expense management application built
 ✓ Dashboard'ta Alacaklar kartı Geciken Alacaklar raporuna yönlendiriyor
 ✓ Yapılan İş kartındaki dolar işareti kaldırılıp FileText ikonu eklendi
 ✓ Raporlar sayfasında ilk tab Geciken Alacaklar olarak değiştirildi
-✓ Memory storage hot reload sorunu düzeltildi (global storage kullanımı)
-✓ React Query cache ayarları optimize edildi
-✓ Query cache reset ve window reload eklendi veri görünürlüğü için
-✓ Tüm CRUD işlemlerine setTimeout ile page reload eklendi
-✓ Müşteriler bileşeni React Query'siz yapıldı
-✓ File-based persistence eklendi storage-backup.json dosyası ile
-✓ Her CRUD işleminde otomatik dosya kaydetme
 
 # User Preferences
 

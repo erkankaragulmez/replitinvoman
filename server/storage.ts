@@ -1,16 +1,6 @@
 import { type User, type Customer, type Invoice, type Expense, type Payment, type InsertUser, type InsertCustomer, type InsertInvoice, type InsertExpense, type InsertPayment } from "@shared/schema";
 import { randomUUID } from "crypto";
 
-// Type augmentation for global storage
-declare global {
-  var __storage_users__: Map<string, User> | undefined;
-  var __storage_customers__: Map<string, Customer> | undefined;
-  var __storage_invoices__: Map<string, Invoice> | undefined;
-  var __storage_expenses__: Map<string, Expense> | undefined;
-  var __storage_payments__: Map<string, Payment> | undefined;
-  var __storage_instance__: MemStorage | undefined;
-}
-
 export interface IStorage {
   // User methods
   getUser(id: string): Promise<User | undefined>;
@@ -44,63 +34,12 @@ export interface IStorage {
   deletePayment(id: string): Promise<boolean>;
 }
 
-// Global storage maps to persist across hot reloads
-const globalUsers = global.__storage_users__ || (global.__storage_users__ = new Map<string, User>());
-const globalCustomers = global.__storage_customers__ || (global.__storage_customers__ = new Map<string, Customer>());
-const globalInvoices = global.__storage_invoices__ || (global.__storage_invoices__ = new Map<string, Invoice>());
-const globalExpenses = global.__storage_expenses__ || (global.__storage_expenses__ = new Map<string, Expense>());
-const globalPayments = global.__storage_payments__ || (global.__storage_payments__ = new Map<string, Payment>());
-
 export class MemStorage implements IStorage {
-  private users: Map<string, User> = globalUsers;
-  private customers: Map<string, Customer> = globalCustomers;
-  private invoices: Map<string, Invoice> = globalInvoices;
-  private expenses: Map<string, Expense> = globalExpenses;
-  private payments: Map<string, Payment> = globalPayments;
-
-  constructor() {
-    // Load data from file system on startup
-    this.loadFromFile();
-  }
-
-  private saveToFile() {
-    try {
-      const data = {
-        users: Array.from(this.users.entries()),
-        customers: Array.from(this.customers.entries()),
-        invoices: Array.from(this.invoices.entries()),
-        expenses: Array.from(this.expenses.entries()),
-        payments: Array.from(this.payments.entries())
-      };
-      require('fs').writeFileSync('./storage-backup.json', JSON.stringify(data, null, 2));
-    } catch (error) {
-      console.error('Failed to save storage:', error);
-    }
-  }
-
-  private loadFromFile() {
-    try {
-      if (require('fs').existsSync('./storage-backup.json')) {
-        const data = JSON.parse(require('fs').readFileSync('./storage-backup.json', 'utf8'));
-        
-        this.users.clear();
-        this.customers.clear();
-        this.invoices.clear();
-        this.expenses.clear();
-        this.payments.clear();
-        
-        data.users?.forEach(([key, value]: [string, User]) => this.users.set(key, value));
-        data.customers?.forEach(([key, value]: [string, Customer]) => this.customers.set(key, value));
-        data.invoices?.forEach(([key, value]: [string, Invoice]) => this.invoices.set(key, value));
-        data.expenses?.forEach(([key, value]: [string, Expense]) => this.expenses.set(key, value));
-        data.payments?.forEach(([key, value]: [string, Payment]) => this.payments.set(key, value));
-        
-        console.log('Storage loaded from file - Customers:', this.customers.size);
-      }
-    } catch (error) {
-      console.error('Failed to load storage:', error);
-    }
-  }
+  private users: Map<string, User> = new Map();
+  private customers: Map<string, Customer> = new Map();
+  private invoices: Map<string, Invoice> = new Map();
+  private expenses: Map<string, Expense> = new Map();
+  private payments: Map<string, Payment> = new Map();
 
   // User methods
   async getUser(id: string): Promise<User | undefined> {
@@ -137,7 +76,6 @@ export class MemStorage implements IStorage {
       phone: insertCustomer.phone || null
     };
     this.customers.set(id, customer);
-    this.saveToFile(); // Save after each change
     return customer;
   }
 
@@ -147,14 +85,11 @@ export class MemStorage implements IStorage {
     
     const updatedCustomer = { ...customer, ...updateData };
     this.customers.set(id, updatedCustomer);
-    this.saveToFile(); // Save after each change
     return updatedCustomer;
   }
 
   async deleteCustomer(id: string): Promise<boolean> {
-    const result = this.customers.delete(id);
-    if (result) this.saveToFile(); // Save after each change
-    return result;
+    return this.customers.delete(id);
   }
 
   // Invoice methods
@@ -185,7 +120,6 @@ export class MemStorage implements IStorage {
       createdAt: new Date()
     };
     this.invoices.set(id, invoice);
-    this.saveToFile(); // Save after each change
     return invoice;
   }
 
@@ -229,7 +163,6 @@ export class MemStorage implements IStorage {
       createdAt: new Date()
     };
     this.expenses.set(id, expense);
-    this.saveToFile(); // Save after each change
     return expense;
   }
 
@@ -297,5 +230,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Create singleton storage instance that persists across hot reloads
-export const storage = global.__storage_instance__ || (global.__storage_instance__ = new MemStorage());
+export const storage = new MemStorage();
