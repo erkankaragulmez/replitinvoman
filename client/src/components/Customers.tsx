@@ -355,7 +355,17 @@ export function Customers({ user }: CustomersProps) {
                 className="w-full sm:w-auto bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors touch-target disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="button-save-customer"
               >
-                {createMutation.isPending || updateMutation.isPending ? "Kaydediliyor..." : editingCustomer ? "Güncelle" : "Kaydet"}
+                {createMutation.isPending || updateMutation.isPending ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Kaydediliyor...
+                  </div>
+                ) : (
+                  <>
+                    <Users className="h-4 w-4 mr-2 inline-block" />
+                    Kaydet
+                  </>
+                )}
               </button>
             </div>
           </form>
