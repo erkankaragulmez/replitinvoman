@@ -1,6 +1,15 @@
 import { type User, type Customer, type Invoice, type Expense, type Payment, type InsertUser, type InsertCustomer, type InsertInvoice, type InsertExpense, type InsertPayment } from "@shared/schema";
 import { randomUUID } from "crypto";
 
+// Type augmentation for global storage
+declare global {
+  var __storage_users__: Map<string, User> | undefined;
+  var __storage_customers__: Map<string, Customer> | undefined;
+  var __storage_invoices__: Map<string, Invoice> | undefined;
+  var __storage_expenses__: Map<string, Expense> | undefined;
+  var __storage_payments__: Map<string, Payment> | undefined;
+}
+
 export interface IStorage {
   // User methods
   getUser(id: string): Promise<User | undefined>;
@@ -34,12 +43,19 @@ export interface IStorage {
   deletePayment(id: string): Promise<boolean>;
 }
 
+// Global storage maps to persist across hot reloads
+const globalUsers = global.__storage_users__ || (global.__storage_users__ = new Map<string, User>());
+const globalCustomers = global.__storage_customers__ || (global.__storage_customers__ = new Map<string, Customer>());
+const globalInvoices = global.__storage_invoices__ || (global.__storage_invoices__ = new Map<string, Invoice>());
+const globalExpenses = global.__storage_expenses__ || (global.__storage_expenses__ = new Map<string, Expense>());
+const globalPayments = global.__storage_payments__ || (global.__storage_payments__ = new Map<string, Payment>());
+
 export class MemStorage implements IStorage {
-  private users: Map<string, User> = new Map();
-  private customers: Map<string, Customer> = new Map();
-  private invoices: Map<string, Invoice> = new Map();
-  private expenses: Map<string, Expense> = new Map();
-  private payments: Map<string, Payment> = new Map();
+  private users: Map<string, User> = globalUsers;
+  private customers: Map<string, Customer> = globalCustomers;
+  private invoices: Map<string, Invoice> = globalInvoices;
+  private expenses: Map<string, Expense> = globalExpenses;
+  private payments: Map<string, Payment> = globalPayments;
 
   // User methods
   async getUser(id: string): Promise<User | undefined> {
