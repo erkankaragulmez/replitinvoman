@@ -82,60 +82,110 @@ export function Header({ onLogout, activeTab, onTabChange, user }: HeaderProps) 
             >
               <RefreshCw className="h-5 w-5" />
             </button>
-            <div className="relative" ref={profileRef}>
+            {/* Profile Button with Dropdown */}
+            <div 
+              className="relative" 
+              style={{ position: 'relative', zIndex: 10000 }}
+            >
               <button 
-                className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-accent transition-colors flex items-center space-x-1" 
+                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md flex items-center space-x-2"
+                onClick={() => {
+                  alert('Profil butonu çalışıyor!');
+                  setIsProfileMenuOpen(!isProfileMenuOpen);
+                }}
                 style={{ 
-                  minWidth: '44px', 
-                  minHeight: '44px',
-                  zIndex: 1000,
-                  position: 'relative'
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500'
                 }}
-                title="Profil"
-                onClick={(e) => {
-                  console.log('CLICK EVENT TRIGGERED!');
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('Desktop Profile button clicked, current state:', isProfileMenuOpen);
-                  setIsProfileMenuOpen(prev => {
-                    console.log('Setting profile menu to:', !prev);
-                    return !prev;
-                  });
-                }}
-                onMouseDown={() => console.log('MOUSE DOWN on profile button')}
-                onMouseUp={() => console.log('MOUSE UP on profile button')}
-                data-testid="profile-button"
               >
-                <User className="h-5 w-5" />
-                <ChevronDown className="h-3 w-3" />
+                <User size={16} />
+                <span>{user?.name || 'Profil'}</span>
+                <ChevronDown size={12} />
               </button>
               
               {/* Profile Dropdown */}
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-[9999]" style={{ zIndex: 9999 }}>
-                  <div className="p-4 border-b border-border">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-primary" />
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: '0',
+                    marginTop: '8px',
+                    width: '280px',
+                    backgroundColor: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                    zIndex: 99999
+                  }}
+                >
+                  <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        backgroundColor: '#dbeafe',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <User size={20} style={{ color: '#3b82f6' }} />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">{user?.name || 'Kullanıcı'}</p>
-                        <p className="text-sm text-muted-foreground">{user?.email || 'email@example.com'}</p>
-                        <p className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary mt-1 inline-block">
-                          {user?.role === 'admin' ? '👑 Admin' : '👤 Kullanıcı'}
+                        <p style={{ fontWeight: '600', color: '#1f2937', margin: '0' }}>
+                          {user?.name || 'Kullanıcı'}
                         </p>
+                        <p style={{ fontSize: '14px', color: '#6b7280', margin: '0' }}>
+                          {user?.email || 'email@example.com'}
+                        </p>
+                        <span style={{
+                          fontSize: '12px',
+                          backgroundColor: user?.role === 'admin' ? '#fef3c7' : '#f3f4f6',
+                          color: user?.role === 'admin' ? '#d97706' : '#374151',
+                          padding: '4px 8px',
+                          borderRadius: '12px',
+                          marginTop: '4px',
+                          display: 'inline-block'
+                        }}>
+                          {user?.role === 'admin' ? '👑 Admin' : '👤 Kullanıcı'}
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <div className="p-2">
+                  <div style={{ padding: '8px' }}>
                     <button
                       onClick={() => {
                         setIsProfileMenuOpen(false);
                         onLogout();
                       }}
-                      className="w-full text-left px-3 py-2 text-sm text-destructive hover:bg-accent rounded-md transition-colors flex items-center space-x-2"
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '12px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        color: '#dc2626',
+                        fontSize: '14px'
+                      }}
+                      onMouseOver={(e) => (e.target as HTMLElement).style.backgroundColor = '#f9fafb'}
+                      onMouseOut={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}
                     >
-                      <LogOut className="h-4 w-4" />
+                      <LogOut size={16} />
                       <span>Çıkış Yap</span>
                     </button>
                   </div>
