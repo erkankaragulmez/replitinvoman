@@ -84,14 +84,26 @@ export function Header({ onLogout, activeTab, onTabChange, user }: HeaderProps) 
             </button>
             <div className="relative" ref={profileRef}>
               <button 
-                className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-accent transition-colors touch-target flex items-center space-x-1" 
+                className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-accent transition-colors flex items-center space-x-1" 
+                style={{ 
+                  minWidth: '44px', 
+                  minHeight: '44px',
+                  zIndex: 1000,
+                  position: 'relative'
+                }}
                 title="Profil"
                 onClick={(e) => {
+                  console.log('CLICK EVENT TRIGGERED!');
                   e.preventDefault();
                   e.stopPropagation();
                   console.log('Desktop Profile button clicked, current state:', isProfileMenuOpen);
-                  setIsProfileMenuOpen(prev => !prev);
+                  setIsProfileMenuOpen(prev => {
+                    console.log('Setting profile menu to:', !prev);
+                    return !prev;
+                  });
                 }}
+                onMouseDown={() => console.log('MOUSE DOWN on profile button')}
+                onMouseUp={() => console.log('MOUSE UP on profile button')}
                 data-testid="profile-button"
               >
                 <User className="h-5 w-5" />

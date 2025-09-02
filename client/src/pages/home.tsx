@@ -88,7 +88,7 @@ export default function Home() {
         textAlign: 'center',
         fontSize: '20px',
         fontWeight: 'bold',
-        zIndex: 9999,
+        zIndex: 999,
         boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
       }}>
         🚨 ADMIN PANEL ERİŞİMİ 🚨
