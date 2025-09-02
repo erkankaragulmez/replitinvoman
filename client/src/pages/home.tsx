@@ -82,26 +82,22 @@ export default function Home() {
         onTabChange={setActiveTab}
       />
       
-      {/* Direct Admin Access */}
-      <div className="bg-blue-50 dark:bg-blue-900 p-4 text-center border-b">
-        <div className="text-sm mb-3">
-          <strong>Admin Panel Erişimi:</strong> 
-        </div>
-        <div className="space-x-4">
-          <button 
-            onClick={() => setActiveTab("admin")}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium"
-          >
-            🎯 Admin Paneli Aç
-          </button>
-          <a 
-            href="#admin"
-            onClick={() => setActiveTab("admin")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium inline-block"
-          >
-            📱 Admin Link
-          </a>
-        </div>
+      {/* ADMIN PANEL ACCESS - ALWAYS VISIBLE */}
+      <div style={{backgroundColor: '#ef4444', color: 'white', padding: '20px', textAlign: 'center', fontSize: '18px', fontWeight: 'bold'}}>
+        ⚠️ ADMIN PANEL ERIŞIMI ⚠️
+        <br/>
+        <button 
+          onClick={() => setActiveTab("admin")}
+          style={{backgroundColor: '#22c55e', color: 'white', padding: '15px 30px', margin: '10px', borderRadius: '8px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'}}
+        >
+          🎯 ADMIN PANELI AÇ
+        </button>
+        <button 
+          onClick={() => setActiveTab("admin")}
+          style={{backgroundColor: '#3b82f6', color: 'white', padding: '15px 30px', margin: '10px', borderRadius: '8px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'}}
+        >
+          📱 ADMIN SAYFASI
+        </button>
       </div>
       
       {/* Desktop Navigation Tabs */}
