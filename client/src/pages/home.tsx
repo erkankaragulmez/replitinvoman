@@ -100,7 +100,7 @@ export default function Home() {
               { id: "invoices", label: "Faturalar", icon: "📄" },
               { id: "expenses", label: "Masraflar", icon: "💳" },
               { id: "reports", label: "Raporlar", icon: "📈" },
-              ...(user && user.role === "admin" ? [{ id: "admin", label: "Yönetim", icon: "⚙️" }] : [])
+              { id: "admin", label: "Yönetim", icon: "⚙️" }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -126,7 +126,7 @@ export default function Home() {
         {activeTab === "invoices" && <Invoices user={user} />}
         {activeTab === "expenses" && <Expenses user={user} />}
         {activeTab === "reports" && <Reports user={user} />}
-        {activeTab === "admin" && user && user.role === "admin" && <AdminPanel user={user} />}
+        {activeTab === "admin" && <AdminPanel user={user} />}
       </main>
     </div>
   );
