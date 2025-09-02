@@ -86,9 +86,11 @@ export function Header({ onLogout, activeTab, onTabChange, user }: HeaderProps) 
               <button 
                 className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-accent transition-colors touch-target flex items-center space-x-1" 
                 title="Profil"
-                onClick={() => {
-                  console.log('Profile button clicked, current state:', isProfileMenuOpen);
-                  setIsProfileMenuOpen(!isProfileMenuOpen);
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Desktop Profile button clicked, current state:', isProfileMenuOpen);
+                  setIsProfileMenuOpen(prev => !prev);
                 }}
                 data-testid="profile-button"
               >
@@ -98,7 +100,7 @@ export function Header({ onLogout, activeTab, onTabChange, user }: HeaderProps) 
               
               {/* Profile Dropdown */}
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-card border border-border rounded-md shadow-lg z-50">
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-[9999]" style={{ zIndex: 9999 }}>
                   <div className="p-4 border-b border-border">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -151,7 +153,12 @@ export function Header({ onLogout, activeTab, onTabChange, user }: HeaderProps) 
               <button 
                 className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent touch-target" 
                 title="Profil"
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Mobile Profile button clicked, current state:', isProfileMenuOpen);
+                  setIsProfileMenuOpen(prev => !prev);
+                }}
                 data-testid="mobile-profile"
               >
                 <User className="h-5 w-5" />
@@ -159,7 +166,7 @@ export function Header({ onLogout, activeTab, onTabChange, user }: HeaderProps) 
               
               {/* Mobile Profile Dropdown */}
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-card border border-border rounded-md shadow-lg z-50">
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-[9999]" style={{ zIndex: 9999 }}>
                   <div className="p-4 border-b border-border">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
