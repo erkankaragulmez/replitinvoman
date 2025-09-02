@@ -112,6 +112,11 @@ export function Header({ onLogout, activeTab, onTabChange, user }: HeaderProps) 
                 <ChevronDown size={12} />
               </button>
               
+              {/* Debug: Show state */}
+              <div style={{ fontSize: '10px', color: 'red', position: 'absolute', top: '-20px', right: '0' }}>
+                Menu: {isProfileMenuOpen ? 'AÇIK' : 'KAPALI'}
+              </div>
+              
               {/* Profile Dropdown */}
               {isProfileMenuOpen && (
                 <div 
