@@ -69,14 +69,18 @@ export default function Home() {
         onTabChange={setActiveTab}
       />
       
-      {/* Debug button - temporary */}
-      <div className="bg-yellow-100 p-2 text-center">
-        <span className="text-sm mr-2">Role: {user?.role || 'undefined'}</span>
+      {/* Debug info - temporary */}
+      <div className="bg-yellow-100 dark:bg-yellow-900 p-3 text-center border-b">
+        <div className="text-sm">
+          <strong>Debug:</strong> Role = "{user?.role || 'undefined'}" | 
+          Email = "{user?.email}" | 
+          Admin sekmesi = {user && user.role === "admin" ? "✅ Görünmeli" : "❌ Görünmez"}
+        </div>
         <button 
           onClick={refreshUserData}
-          className="bg-blue-500 text-white px-3 py-1 rounded text-sm"
+          className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
         >
-          🔄 Kullanıcı Verisini Yenile
+          🔄 Admin Yetkisini Kontrol Et
         </button>
       </div>
       
