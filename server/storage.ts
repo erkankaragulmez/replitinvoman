@@ -103,7 +103,9 @@ export class MemStorage implements IStorage {
   async makeUserAdmin(email: string): Promise<boolean> {
     const user = await this.getUserByEmail(email);
     if (user) {
-      await this.updateUser(user.id, { role: "admin" });
+      user.role = "admin";
+      user.updatedAt = new Date();
+      this.users.set(user.id, user);
       return true;
     }
     return false;

@@ -141,13 +141,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/make-admin", async (req, res) => {
     try {
       const { email } = req.body;
+      console.log("Making admin:", email);
+      const user = await storage.getUserByEmail(email);
+      console.log("Found user:", user ? { id: user.id, role: user.role } : "not found");
+      
       const success = await storage.makeUserAdmin(email);
+      console.log("Admin operation result:", success);
+      
       if (success) {
-        res.json({ success: true, message: "Kullanıcı admin yapıldı" });
+        const updatedUser = await storage.getUserByEmail(email);
+        console.log("Updated user:", updatedUser ? { id: updatedUser.id, role: updatedUser.role } : "not found");
+        res.json({ success: true, message: "Kullanıcı admin yapıldı", user: updatedUser });
       } else {
         res.status(404).json({ error: "Kullanıcı bulunamadı" });
       }
     } catch (error) {
+      console.error("Admin yapma hatası:", error);
       res.status(500).json({ error: "Admin yapma işlemi başarısız" });
     }
   });
