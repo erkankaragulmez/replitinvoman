@@ -1,14 +1,33 @@
-import { useState } from "react";
-import { Menu, Bell, RefreshCw, User, LogOut } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Menu, Bell, RefreshCw, User, LogOut, ChevronDown } from "lucide-react";
 
 interface HeaderProps {
   onLogout: () => void;
   activeTab: string;
   onTabChange: (tab: string) => void;
+  user?: any;
 }
 
-export function Header({ onLogout, activeTab, onTabChange }: HeaderProps) {
+export function Header({ onLogout, activeTab, onTabChange, user }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    }
+
+    if (isProfileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isProfileMenuOpen]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -63,13 +82,49 @@ export function Header({ onLogout, activeTab, onTabChange }: HeaderProps) {
             >
               <RefreshCw className="h-5 w-5" />
             </button>
-            <button 
-              className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-accent transition-colors touch-target" 
-              title="Profil"
-              data-testid="profile-button"
-            >
-              <User className="h-5 w-5" />
-            </button>
+            <div className="relative" ref={profileRef}>
+              <button 
+                className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-accent transition-colors touch-target flex items-center space-x-1" 
+                title="Profil"
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                data-testid="profile-button"
+              >
+                <User className="h-5 w-5" />
+                <ChevronDown className="h-3 w-3" />
+              </button>
+              
+              {/* Profile Dropdown */}
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-card border border-border rounded-md shadow-lg z-50">
+                  <div className="p-4 border-b border-border">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">{user?.name || 'Kullanıcı'}</p>
+                        <p className="text-sm text-muted-foreground">{user?.email || 'email@example.com'}</p>
+                        <p className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary mt-1 inline-block">
+                          {user?.role === 'admin' ? '👑 Admin' : '👤 Kullanıcı'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        onLogout();
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-destructive hover:bg-accent rounded-md transition-colors flex items-center space-x-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Çıkış Yap</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <button
               onClick={onLogout}
               className="text-muted-foreground hover:text-destructive p-2 rounded-md hover:bg-accent transition-colors touch-target"
@@ -89,13 +144,48 @@ export function Header({ onLogout, activeTab, onTabChange }: HeaderProps) {
             >
               <Bell className="h-5 w-5" />
             </button>
-            <button 
-              className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent touch-target" 
-              title="Profil"
-              data-testid="mobile-profile"
-            >
-              <User className="h-5 w-5" />
-            </button>
+            <div className="relative" ref={profileRef}>
+              <button 
+                className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent touch-target" 
+                title="Profil"
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                data-testid="mobile-profile"
+              >
+                <User className="h-5 w-5" />
+              </button>
+              
+              {/* Mobile Profile Dropdown */}
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-card border border-border rounded-md shadow-lg z-50">
+                  <div className="p-4 border-b border-border">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">{user?.name || 'Kullanıcı'}</p>
+                        <p className="text-sm text-muted-foreground">{user?.email || 'email@example.com'}</p>
+                        <p className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary mt-1 inline-block">
+                          {user?.role === 'admin' ? '👑 Admin' : '👤 Kullanıcı'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        onLogout();
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-destructive hover:bg-accent rounded-md transition-colors flex items-center space-x-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Çıkış Yap</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -121,6 +121,7 @@ export default function Home() {
           onLogout={handleLogout} 
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          user={user}
         />
       
         {/* Desktop Navigation Tabs */}
